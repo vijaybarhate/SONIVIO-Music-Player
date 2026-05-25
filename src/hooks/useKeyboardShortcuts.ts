@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { usePlayerStore } from '../store/playerStore';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 export const useKeyboardShortcuts = () => {
   const { 
@@ -15,6 +16,9 @@ export const useKeyboardShortcuts = () => {
     setExpanded
   } = usePlayerStore();
 
+  const navigate = useNavigate();
+  const location = useLocation();
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Don't trigger shortcuts if user is typing in an input
@@ -22,19 +26,24 @@ export const useKeyboardShortcuts = () => {
         e.target instanceof HTMLInputElement || 
         e.target instanceof HTMLTextAreaElement
       ) {
+        if (e.key === 'Escape') {
+          (e.target as HTMLElement).blur();
+        }
         return;
       }
 
       switch (e.code) {
         case 'Space':
           e.preventDefault();
-          isPlaying ? pause() : play();
+          if (currentTrack) {
+            isPlaying ? pause() : play();
+          }
           break;
-        case 'ArrowRight':
-          if (e.shiftKey) next();
+        case 'KeyN':
+          next();
           break;
-        case 'ArrowLeft':
-          if (e.shiftKey) previous();
+        case 'KeyP':
+          previous();
           break;
         case 'KeyM':
           toggleMute();
@@ -42,16 +51,26 @@ export const useKeyboardShortcuts = () => {
         case 'KeyL':
           if (currentTrack) toggleLike(currentTrack);
           break;
-        case 'KeyF':
-          setExpanded(!isExpanded);
+        case 'Slash':
+          e.preventDefault();
+          if (location.pathname !== '/search') {
+            navigate('/search');
+          }
+          // Delay to allow navigation/rendering before focusing
+          setTimeout(() => {
+            const searchInput = document.querySelector('input[placeholder*="QUERY"]') as HTMLInputElement;
+            searchInput?.focus();
+          }, 50);
           break;
         case 'Escape':
-          if (isExpanded) setExpanded(false);
+          if (isExpanded) {
+            setExpanded(false);
+          }
           break;
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isPlaying, play, pause, next, previous, toggleMute, currentTrack, toggleLike, isExpanded, setExpanded]);
+  }, [isPlaying, play, pause, next, previous, toggleMute, currentTrack, toggleLike, isExpanded, setExpanded, navigate, location]);
 };

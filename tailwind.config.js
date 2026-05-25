@@ -7,26 +7,34 @@ export default {
   theme: {
     extend: {
       colors: {
-        brand: '#1DB954',
-        'brand-hover': '#1ED760',
-        bg: '#191414',
-        'bg-light': '#282828',
-        'bg-lighter': '#3E3E3E',
+        brand: '#EEFF00',
+        'brand-hover': '#D4E600',
+        bg: '#0A0A0A',
+        'bg-light': '#141414',
+        'bg-lighter': '#1A1A1A',
         text: '#FFFFFF',
-        'text-sub': '#B3B3B3',
-        surface: '#282828',
-        'surface-light': '#3E3E3E',
+        'text-sub': '#888888',
+        surface: '#141414',
+        'surface-light': '#1A1A1A',
+        'border-hard': '#333333',
+        'accent': '#EEFF00',
       },
       fontFamily: {
-        circular: ['Circular', 'sans-serif'],
+        display: ['Anton', 'sans-serif'],
+        mono: ['JetBrains Mono', 'monospace'],
+        circular: ['JetBrains Mono', 'monospace'], // Fallback to keep compatibility
       },
       borderRadius: {
-        sm: '4px',
-        DEFAULT: '8px',
-        lg: '12px',
-        xl: '16px',
-        full: '9999px',
+        sm: '0px',
+        DEFAULT: '0px',
+        lg: '0px',
+        xl: '0px',
+        '2xl': '0px',
+        full: '0px',
       },
+      borderWidth: {
+        DEFAULT: '1px',
+      }
     },
   },
   plugins: [],

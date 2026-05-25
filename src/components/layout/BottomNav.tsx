@@ -11,19 +11,23 @@ const BottomNav: React.FC = () => {
   ];
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-bg/95 backdrop-blur-md border-t border-white/10 px-4 py-2 z-50">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-bg border-t border-border-hard px-4 py-3 z-[60]">
       <ul className="flex justify-between items-center max-w-md mx-auto">
         {navItems.map((item) => (
-          <li key={item.path}>
+          <li key={item.path} className="flex-1">
             <NavLink
               to={item.path}
               className={({ isActive }) => `
-                flex flex-col items-center gap-1 p-2 rounded-lg transition-colors
-                ${isActive ? 'text-brand' : 'text-text-sub hover:text-text'}
+                flex flex-col items-center gap-1.5 p-1 transition-all
+                ${isActive ? 'text-brand border-t-2 border-brand -mt-[13px] pt-[11px]' : 'text-text-sub hover:text-text'}
               `}
             >
-              <item.icon size={22} />
-              <span className="text-[10px] font-semibold">{item.label}</span>
+              {({ isActive }) => (
+                <>
+                  <item.icon size={20} strokeWidth={isActive ? 3 : 2} />
+                  <span className="text-[9px] font-mono uppercase tracking-widest">{item.label}</span>
+                </>
+              )}
             </NavLink>
           </li>
         ))}

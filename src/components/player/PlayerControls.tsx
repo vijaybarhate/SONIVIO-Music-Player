@@ -14,6 +14,10 @@ const PlayerControls: React.FC = () => {
     previous,
     toggleShuffle,
     setRepeatMode,
+    queue,
+    queueIndex,
+    currentTrack,
+    progress
   } = usePlayerStore();
 
   const handleRepeatClick = () => {
@@ -22,43 +26,54 @@ const PlayerControls: React.FC = () => {
     else setRepeatMode('none');
   };
 
+  const canNext = queue.length > 0 && (repeatMode === 'all' || queueIndex < queue.length - 1);
+  const canPrev = queue.length > 0 && (repeatMode === 'all' || queueIndex > 0 || progress > 3);
+
   return (
     <div className="flex items-center gap-6">
       <button
         onClick={toggleShuffle}
-        className={`text-text-sub hover:text-text transition-colors ${shuffle ? 'text-brand' : ''}`}
+        className={`transition-all ${shuffle ? 'text-brand' : 'text-text-sub hover:text-white'}`}
+        title="SHUFFLE_MODE"
       >
-        <Shuffle size={18} />
+        <Shuffle size={16} strokeWidth={shuffle ? 3 : 2} />
       </button>
 
       <button
         onClick={previous}
-        className="text-text-sub hover:text-text transition-colors"
+        disabled={!canPrev}
+        className={`transition-colors ${canPrev ? 'text-text-sub hover:text-white' : 'text-text-sub/20 cursor-not-allowed'}`}
+        title="PREV_TRACK"
       >
-        <SkipBack size={24} fill="currentColor" />
+        <SkipBack size={22} fill="currentColor" />
       </button>
 
       <motion.button
         onClick={() => (isPlaying ? pause() : play())}
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        className="w-10 h-10 flex items-center justify-center rounded-full bg-brand text-black hover:scale-105 transition-transform"
+        whileHover={{ scale: currentTrack ? 1.05 : 1 }}
+        whileTap={{ scale: currentTrack ? 0.95 : 1 }}
+        disabled={!currentTrack}
+        className={`w-12 h-12 flex items-center justify-center bg-brand text-black border border-black transition-all shadow-[4px_4px_0px_0px_rgba(238,255,0,0.3)] hover:shadow-none ${!currentTrack ? 'opacity-50 grayscale cursor-not-allowed' : 'hover:bg-white'}`}
+        title={isPlaying ? "PAUSE_SYSTEM" : "INITIALIZE_PLAYBACK"}
       >
-        {isPlaying ? <Pause size={22} fill="currentColor" /> : <Play size={22} fill="currentColor" className="ml-1" />}
+        {isPlaying ? <Pause size={24} fill="currentColor" /> : <Play size={24} fill="currentColor" className="ml-1" />}
       </motion.button>
 
       <button
         onClick={next}
-        className="text-text-sub hover:text-text transition-colors"
+        disabled={!canNext}
+        className={`transition-colors ${canNext ? 'text-text-sub hover:text-white' : 'text-text-sub/20 cursor-not-allowed'}`}
+        title="NEXT_TRACK"
       >
-        <SkipForward size={24} fill="currentColor" />
+        <SkipForward size={22} fill="currentColor" />
       </button>
 
       <button
         onClick={handleRepeatClick}
-        className={`text-text-sub hover:text-text transition-colors ${repeatMode !== 'none' ? 'text-brand' : ''}`}
+        className={`transition-all ${repeatMode !== 'none' ? 'text-brand' : 'text-text-sub hover:text-white'}`}
+        title="REPEAT_MODE"
       >
-        {repeatMode === 'one' ? <Repeat1 size={18} /> : <Repeat size={18} />}
+        {repeatMode === 'one' ? <Repeat1 size={16} strokeWidth={3} /> : <Repeat size={16} strokeWidth={repeatMode === 'all' ? 3 : 2} />}
       </button>
     </div>
   );

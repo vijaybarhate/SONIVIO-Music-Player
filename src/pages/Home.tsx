@@ -1,31 +1,60 @@
 import React, { useEffect, useState } from 'react';
-import { getTrendingTracks, searchTracks } from '../services/youtube';
+import { 
+  getIndianTrending, 
+  getGlobalTrending, 
+  getNightDriveMix, 
+  getWorkoutMix, 
+  getConcentrationMix,
+  getTrendingTracks
+} from '../services/youtube';
 import { Track } from '../types';
 import SongCard from '../components/cards/SongCard';
-import { SkeletonGrid } from '../components/common/LoadingSpinner';
+import { LoadingState, ErrorState } from '../components/common/FeedbackStates';
 import { motion } from 'framer-motion';
-import { Sparkles, TrendingUp, Music, Play } from 'lucide-react';
+import { Play, TrendingUp, Globe, Moon, Dumbbell, Focus } from 'lucide-react';
+import { usePlayerStore } from '../store/playerStore';
 
 const Home: React.FC = () => {
-  const [trending, setTrending] = useState<Track[]>([]);
-  const [recommended, setRecommended] = useState<Track[]>([]);
-  const [lofi, setLofi] = useState<Track[]>([]);
+  const [sections, setSections] = useState<{ title: string; icon: any; tracks: Track[]; source: string }[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const { play } = usePlayerStore();
 
   useEffect(() => {
     const fetchHomeData = async () => {
       try {
         setLoading(true);
-        const [trendingData, recommendedData, lofiData] = await Promise.all([
-          getTrendingTracks(),
-          searchTracks('featured music 2026 mixes'),
-          searchTracks('lofi hip hop radio beats to relax'),
+        setError(false);
+        
+        // Use individual try-catches to ensure one failure doesn't break the whole page
+        const fetchSection = async (title: string, icon: any, source: string, fetchFn: () => Promise<Track[]>) => {
+          try {
+            const tracks = await fetchFn();
+            return { title, icon, tracks, source };
+          } catch (e) {
+            console.error(`Failed to fetch section ${title}:`, e);
+            return null;
+          }
+        };
+
+        const results = await Promise.all([
+          fetchSection('Global_Trending', Globe, 'GLOBAL_ARCHIVE', getGlobalTrending),
+          fetchSection('Indian_Trending', TrendingUp, 'REGIONAL_ARCHIVE', getIndianTrending),
+          fetchSection('Night_Drive', Moon, 'ATMOSPHERIC_MIX', getNightDriveMix),
+          fetchSection('Workout_Energy', Dumbbell, 'SIGNAL_BOOST', getWorkoutMix),
+          fetchSection('Deep_Focus', Focus, 'NEURAL_SYNC', getConcentrationMix),
         ]);
-        setTrending(trendingData);
-        setRecommended(recommendedData);
-        setLofi(lofiData);
+
+        const validSections = results.filter((s): s is NonNullable<typeof s> => s !== null);
+        
+        if (validSections.length === 0) {
+          setError(true);
+        } else {
+          setSections(validSections);
+        }
       } catch (error) {
         console.error('Failed to fetch home data:', error);
+        setError(true);
       } finally {
         setLoading(false);
       }
@@ -34,69 +63,65 @@ const Home: React.FC = () => {
     fetchHomeData();
   }, []);
 
-  const Section: React.FC<{ title: string; icon: React.ReactNode; tracks: Track[] }> = ({ title, icon, tracks }) => (
-    <section className="mb-12">
-      <div className="flex items-center gap-3 mb-6 px-6">
-        <div className="text-text-sub">{icon}</div>
-        <h2 className="text-xl font-bold">{title}</h2>
-      </div>
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 px-4 md:px-6">
-        {tracks.map((track, i) => (
-          <motion.div
-            key={track.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.05 }}
-          >
-            <SongCard track={track} context={tracks} />
-          </motion.div>
-        ))}
-      </div>
-    </section>
-  );
-
-  if (loading) {
-    return (
-      <div className="py-12 px-6">
-        <div className="mb-12 px-6">
-          <div className="h-14 bg-surface-light w-80 rounded-lg mb-4" />
-          <div className="h-6 bg-surface-light w-48 rounded-lg" />
-        </div>
-        <SkeletonGrid count={8} />
-      </div>
-    );
-  }
+  if (loading) return <LoadingState title="Initializing_Discovery" message="Mapping global trending data..." />;
+  if (error) return <ErrorState title="Sync_Error" message="Unable to connect to audio archives. The YouTube API quota may be exceeded." actionLabel="Retry_Connection" />;
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="py-8">
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="py-12 pb-32">
       {/* Hero */}
-      <div className="px-6 mb-12">
-        <h1 className="text-4xl md:text-5xl font-bold mb-3">Good Evening</h1>
-        <p className="text-text-sub text-lg">Ready for some music?</p>
-      </div>
-
-      {/* Banner */}
-      <div className="my-12 px-6">
-        <div className="relative overflow-hidden rounded-2xl p-8 md:p-12" style={{
-          background: 'linear-gradient(135deg, rgba(29,185,84,0.2) 0%, rgba(40,40,40,0.8) 100%)'
-        }}>
-          <div className="relative z-10 max-w-2xl">
-            <h2 className="text-3xl md:text-5xl font-bold mb-4">Discover Your Sound</h2>
-            <p className="text-text-sub text-lg mb-8 max-w-lg">
-              Experience music like never before with our curated mixes.
-            </p>
-            <button className="btn-primary inline-flex items-center gap-2">
-              <Play size={18} fill="currentColor" />
-              Play
-            </button>
-          </div>
-          <div className="absolute top-0 right-0 w-64 h-64 bg-brand/20 rounded-full blur-3xl" />
+      <div className="px-8 mb-20 relative">
+        <div className="absolute top-0 right-8 text-[12px] font-mono text-text-sub uppercase tracking-[0.4em] [writing-mode:vertical-lr]">
+          EST. 2026 // SONIVIO_AUDIO
+        </div>
+        <h1 className="text-7xl md:text-[120px] font-display leading-[0.85] mb-6 tracking-tighter">
+          SYSTEM<br />DISCOVERY
+        </h1>
+        <div className="flex items-center gap-4">
+          <span className="w-12 h-px bg-brand" />
+          <p className="text-brand font-mono text-sm uppercase tracking-[0.2em]">Operational_Status: Optimal</p>
         </div>
       </div>
 
-      <Section title="Trending Now" icon={<TrendingUp size={20} />} tracks={trending} />
-      <Section title="Made For You" icon={<Sparkles size={20} />} tracks={recommended} />
-      <Section title="Lofi & Chill" icon={<Music size={20} />} tracks={lofi} />
+      {sections.map((section, sIdx) => (
+        <section key={section.title} className="mb-20 border-t border-border-hard pt-12">
+          <div className="flex items-end justify-between mb-10 px-8">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-brand text-black border border-black shadow-[4px_4px_0px_0px_rgba(238,255,0,0.2)]">
+                <section.icon size={24} strokeWidth={2.5} />
+              </div>
+              <div>
+                <h2 className="text-4xl font-display uppercase tracking-tight leading-none">{section.title}</h2>
+                <span className="font-mono text-[10px] text-text-sub uppercase tracking-[0.3em]">{section.source}</span>
+              </div>
+            </div>
+            
+            <button 
+              onClick={() => play(section.tracks[0], section.tracks)}
+              className="group flex items-center gap-3 font-mono text-[10px] uppercase tracking-widest text-text-sub hover:text-brand transition-all"
+            >
+              <div className="p-2 border border-border-hard group-hover:border-brand transition-colors">
+                <Play size={14} fill="currentColor" />
+              </div>
+              <span>Play_All</span>
+            </button>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-0 border-l border-t border-border-hard mx-8">
+            {section.tracks.map((track, i) => (
+              <motion.div
+                key={`${section.title}-${track.id}`}
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.02 }}
+                className="border-r border-b border-border-hard"
+              >
+                <SongCard track={track} context={section.tracks} source={section.title} />
+              </motion.div>
+            ))}
+          </div>
+        </section>
+      ))}
     </motion.div>
   );
 };

@@ -16,7 +16,8 @@ const App: React.FC = () => {
           <Route path="library" element={<Library />} />
           <Route path="favorites" element={<Library />} />
           <Route path="recent" element={<Library />} />
-          <Route path="playlists" element={<Library />} />
+          <Route path="history" element={<Library />} />
+          <Route path="playlist/:id" element={<Library />} />
           <Route path="about" element={<About />} />
           <Route path="*" element={<Home />} />
         </Route>

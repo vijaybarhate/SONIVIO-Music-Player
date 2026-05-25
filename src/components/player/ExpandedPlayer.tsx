@@ -19,102 +19,117 @@ const ExpandedPlayer: React.FC = () => {
           initial={{ y: '100%' }}
           animate={{ y: 0 }}
           exit={{ y: '100%' }}
-          transition={{ type: 'spring', damping: 30, stiffness: 200 }}
+          transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
           className="fixed inset-0 z-[100] bg-bg flex flex-col"
         >
-          {/* Background with gradient */}
-          <div className="absolute inset-0 overflow-hidden pointer-events-none">
-            <div
-              className="absolute inset-0"
-              style={{
-                background: `
-                  radial-gradient(circle at 30% 20%, rgba(29, 185, 84, 0.15) 0%, transparent 40%),
-                  radial-gradient(circle at 70% 80%, rgba(29, 185, 84, 0.1) 0%, transparent 40%),
-                  linear-gradient(180deg, rgba(29, 185, 84, 0.05) 0%, #191414 100%)
-                `,
-              }}
-            />
-          </div>
-
           {/* Header */}
-          <div className="relative z-10 p-6 flex items-center justify-between">
+          <div className="relative z-10 p-8 border-b border-border-hard flex items-center justify-between">
             <button
               onClick={() => setExpanded(false)}
-              className="p-2 text-text-sub hover:text-text transition-colors"
+              className="flex items-center gap-2 group"
             >
-              <ChevronDown size={28} />
+              <div className="p-2 border border-border-hard group-hover:bg-brand group-hover:text-black transition-all">
+                <ChevronDown size={24} />
+              </div>
+              <span className="font-mono text-[10px] uppercase tracking-widest text-text-sub group-hover:text-brand">Close_Monitor</span>
             </button>
             <div className="text-center">
-              <p className="text-xs font-bold text-text-sub uppercase tracking-widest">Now Playing</p>
-              <p className="text-sm font-semibold text-text/70 mt-1">{currentTrack.artist}</p>
+              <p className="text-[10px] font-mono text-brand uppercase tracking-[0.4em]">Active_Monitor_01</p>
             </div>
-            <button className="p-2 text-text-sub hover:text-text transition-colors">
-              <Share2 size={24} />
-            </button>
+            <div className="flex items-center gap-4">
+               <button className="p-2 text-text-sub hover:text-brand transition-colors">
+                <Share2 size={20} />
+              </button>
+              <button className="p-2 text-text-sub hover:text-brand transition-colors">
+                <MoreHorizontal size={20} />
+              </button>
+            </div>
           </div>
 
           {/* Main Content */}
-          <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-8 md:flex-row md:gap-16 md:max-w-6xl md:mx-auto w-full">
+          <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-8 md:flex-row md:gap-24 md:max-w-7xl md:mx-auto w-full py-12">
             {/* Artwork */}
             <motion.div
-              className="w-full aspect-square max-w-[400px] mb-10 md:mb-0"
+              className="w-full aspect-square max-w-[400px] mb-12 md:mb-0 relative"
             >
-              <motion.div
-                animate={{ y: [0, -5, 0] }}
-                transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-                className="relative rounded-2xl overflow-hidden shadow-2xl shadow-black/50"
-              >
+              <div className="absolute -top-4 -left-4 w-12 h-12 border-t-2 border-l-2 border-brand pointer-events-none" />
+              <div className="absolute -bottom-4 -right-4 w-12 h-12 border-b-2 border-r-2 border-brand pointer-events-none" />
+              <div className="w-full h-full border border-border-hard p-4 bg-bg-light">
                 <img
                   src={currentTrack.thumbnail}
                   alt={currentTrack.title}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover grayscale opacity-90"
                 />
-              </motion.div>
+              </div>
             </motion.div>
 
             {/* Info & Controls */}
-            <div className="w-full max-w-[480px]">
-              <div className="flex items-start justify-between mb-8">
-                <div className="min-w-0 flex-1 pr-4">
-                  <h1 className="text-3xl md:text-4xl font-bold text-text truncate mb-2">
-                    {currentTrack.title}
-                  </h1>
-                  <p className="text-xl text-text-sub">
-                    {currentTrack.artist}
-                  </p>
+            <div className="w-full max-w-[520px]">
+              <div className="mb-12">
+                <div className="flex items-center gap-2 mb-6">
+                  <span className="w-8 h-px bg-brand" />
+                  <p className="text-[10px] font-mono text-brand uppercase tracking-[0.3em]">Signal_Source: {currentTrack.artist}</p>
                 </div>
+                
+                <div className="flex items-start justify-between mb-8">
+                  <div className="min-w-0 flex-1">
+                    <h1 className="text-5xl md:text-7xl font-display uppercase leading-[0.9] mb-4 tracking-tighter">
+                      {currentTrack.title}
+                    </h1>
+                    <p className="text-xl font-mono text-text-sub uppercase tracking-widest">
+                      {currentTrack.artist}
+                    </p>
+                  </div>
+                </div>
+                
                 <button
                   onClick={() => toggleLike(currentTrack)}
-                  className={`p-3 rounded-full transition-all ${
+                  className={`flex items-center gap-3 py-3 px-6 border transition-all ${
                     isLiked
-                      ? 'text-brand bg-brand/10'
-                      : 'text-text-sub hover:text-text'
+                      ? 'bg-brand text-black border-black'
+                      : 'border-border-hard text-text-sub hover:border-brand hover:text-brand'
                   }`}
                 >
-                  <Heart size={28} fill={isLiked ? "currentColor" : "none"} />
+                  <Heart size={20} fill={isLiked ? "currentColor" : "none"} />
+                  <span className="font-mono text-xs uppercase tracking-widest">{isLiked ? 'Stored_in_Archive' : 'Tag_for_Archive'}</span>
                 </button>
               </div>
 
-              <div className="mb-10">
+              <div className="mb-12">
+                <div className="flex justify-between mb-2">
+                   <span className="font-mono text-[10px] text-text-sub uppercase tracking-widest">Temporal_Progression</span>
+                   <span className="font-mono text-[10px] text-brand uppercase tracking-widest">Sync_Stable</span>
+                </div>
                 <ProgressBar />
               </div>
 
-              <div className="flex flex-col items-center gap-8">
+              <div className="flex flex-col items-center gap-12">
                 <PlayerControls />
 
-                <div className="w-full flex items-center justify-between gap-8 pt-6 border-t border-white/10">
-                  <button className="text-text-sub hover:text-text transition-colors">
-                    <ListMusic size={22} />
-                  </button>
-                  <div className="flex-1 max-w-[200px]">
-                    <VolumeControl />
+                <div className="w-full grid grid-cols-3 gap-8 pt-10 border-t border-border-hard">
+                  <div className="flex flex-col gap-2">
+                    <span className="font-mono text-[9px] text-text-sub uppercase tracking-widest">System_Queue</span>
+                    <button className="text-text-sub hover:text-brand transition-colors flex items-center gap-2">
+                      <ListMusic size={20} />
+                      <span className="font-mono text-[10px] uppercase">Access</span>
+                    </button>
                   </div>
-                  <button className="text-text-sub hover:text-text transition-colors">
-                    <MoreHorizontal size={22} />
-                  </button>
+                  
+                  <div className="flex flex-col gap-2 col-span-2">
+                    <span className="font-mono text-[9px] text-text-sub uppercase tracking-widest">Volume_Regulation</span>
+                    <div className="w-full">
+                      <VolumeControl />
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
+          </div>
+
+          {/* Bottom Banner */}
+          <div className="p-4 border-t border-border-hard flex justify-between items-center px-8">
+            <span className="font-mono text-[9px] text-text-sub uppercase tracking-[0.5em]">System_Status: Optimal</span>
+            <span className="font-mono text-[9px] text-text-sub uppercase tracking-[0.5em]">Buffer: 100%</span>
           </div>
         </motion.div>
       )}

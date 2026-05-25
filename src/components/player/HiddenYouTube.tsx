@@ -11,18 +11,31 @@ const HiddenYouTube: React.FC = () => {
     setProgress,
     setDuration,
     next,
-    lastSeekTime,
-    repeatMode
+    lastPlayedPosition,
+    repeatMode,
+    queue,
+    queueIndex
   } = usePlayerStore();
   
   const playerRef = useRef<any>(null);
   const intervalRef = useRef<number | null>(null);
+  const isInitialLoad = useRef(true);
+
+  // Preload next thumbnail
+  useEffect(() => {
+    const nextItem = queue[queueIndex + 1];
+    if (nextItem) {
+      const img = new Image();
+      img.src = nextItem.track.thumbnail;
+    }
+  }, [queue, queueIndex]);
 
   useEffect(() => {
-    if (playerRef.current && lastSeekTime !== null) {
-      playerRef.current.seekTo(lastSeekTime);
+    if (playerRef.current && isInitialLoad.current && lastPlayedPosition > 0) {
+      playerRef.current.seekTo(lastPlayedPosition);
+      isInitialLoad.current = false;
     }
-  }, [lastSeekTime]);
+  }, [currentTrack]);
 
   useEffect(() => {
     if (playerRef.current) {
@@ -68,9 +81,12 @@ const HiddenYouTube: React.FC = () => {
     if (intervalRef.current) window.clearInterval(intervalRef.current);
   };
 
-  const onEnd: YouTubeProps['onEnd'] = (event) => {
+  const onEnd: YouTubeProps['onEnd'] = () => {
     if (repeatMode === 'one') {
-      event.target.playVideo();
+      if (playerRef.current) {
+        playerRef.current.seekTo(0);
+        playerRef.current.playVideo();
+      }
     } else {
       next();
     }

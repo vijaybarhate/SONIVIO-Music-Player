@@ -9,27 +9,32 @@ const VolumeControl: React.FC = () => {
   const VolumeIcon = effectiveVol === 0 ? VolumeX : effectiveVol < 50 ? Volume1 : Volume2;
 
   return (
-    <div className="flex items-center gap-2 group w-28">
+    <div className="flex items-center gap-3 group w-32">
       <button
         onClick={toggleMute}
-        className="text-text-sub hover:text-text transition-colors p-1"
+        className="text-text-sub hover:text-brand transition-colors p-1"
+        title="MUTE_TOGGLE"
       >
-        <VolumeIcon size={18} />
+        <VolumeIcon size={16} />
       </button>
 
-      <div className="relative flex-1 flex items-center h-5">
+      <div className="relative flex-1 flex items-center h-4">
         <input
           type="range"
           min="0"
           max="100"
           value={effectiveVol}
           onChange={(e) => setVolume(Number(e.target.value))}
-          className="absolute w-full z-10"
+          className="absolute w-full z-10 opacity-0 cursor-pointer h-full"
         />
-        <div className="absolute w-full h-1 bg-surface-light rounded-full" />
+        <div className="absolute w-full h-[2px] bg-border-hard" />
         <div
-          className="absolute h-1 bg-brand rounded-full pointer-events-none"
+          className="absolute h-[2px] bg-brand pointer-events-none"
           style={{ width: `${effectiveVol}%` }}
+        />
+        <div
+          className="absolute w-1 h-3 bg-brand pointer-events-none -mt-[0.5px] border border-black"
+          style={{ left: `calc(${effectiveVol}% - 2px)` }}
         />
       </div>
     </div>
