@@ -4,8 +4,7 @@ import {
   getGlobalTrending, 
   getNightDriveMix, 
   getWorkoutMix, 
-  getConcentrationMix,
-  getTrendingTracks
+  getConcentrationMix
 } from '../services/youtube';
 import { Track } from '../types';
 import SongCard from '../components/cards/SongCard';
@@ -82,7 +81,7 @@ const Home: React.FC = () => {
         </div>
       </div>
 
-      {sections.map((section, sIdx) => (
+      {sections.map((section) => (
         <section key={section.title} className="mb-20 border-t border-border-hard pt-12">
           <div className="flex items-end justify-between mb-10 px-8">
             <div className="flex items-center gap-4">

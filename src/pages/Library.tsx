@@ -5,10 +5,7 @@ import {
   Clock, 
   History, 
   Plus, 
-  X, 
   Trash2, 
-  Play,
-  Settings
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { usePlayerStore } from '../store/playerStore';

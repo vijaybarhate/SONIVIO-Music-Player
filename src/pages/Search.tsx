@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Search as SearchIcon, X, Clock, Trash2, Library as LibraryIcon } from 'lucide-react';
 import { searchTracks } from '../services/youtube';
 import { Track } from '../types';
@@ -16,7 +16,7 @@ const Search: React.FC = () => {
   const [isInputFocused, setIsInputFocused] = useState(false);
   
   const debouncedQuery = useDebounce(query, 500);
-  const { searchHistory, addToSearchHistory, clearSearchHistory, playlists, showToast } = usePlayerStore();
+  const { searchHistory, addToSearchHistory, clearSearchHistory, playlists } = usePlayerStore();
 
   const genres = [
     { label: 'Phonk', query: 'phonk music 2026' },
@@ -161,7 +161,7 @@ const Search: React.FC = () => {
                 <div>
                    <h2 className="font-display text-3xl uppercase tracking-tighter mb-8 text-brand">Track_Archive</h2>
                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-0 border-l border-t border-border-hard">
-                    {results.map((track, i) => (
+                    {results.map((track) => (
                       <div key={track.id} className="border-r border-b border-border-hard">
                         <SongCard track={track} context={results} source="SEARCH_PTR" />
                       </div>

@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { PlayerState, Track, QueueItem, Playlist, RepeatMode } from '../types';
+import { PlayerState, QueueItem, RepeatMode } from '../types';
 
 // Helper for generating unique queue item IDs
 const generateQueueId = () => `q_${Math.random().toString(36).substring(2, 11)}_${Date.now()}`;

@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { AlertTriangle, Inbox, RefreshCw, Music2 } from 'lucide-react';
+import { AlertTriangle, Inbox } from 'lucide-react';
 
 interface FeedbackProps {
   title?: string;

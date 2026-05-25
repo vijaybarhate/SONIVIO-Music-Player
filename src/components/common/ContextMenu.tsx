@@ -5,7 +5,6 @@ import {
   ListMusic, 
   PlusSquare, 
   Heart, 
-  Trash2, 
   Share2, 
   ArrowUpRight 
 } from 'lucide-react';
