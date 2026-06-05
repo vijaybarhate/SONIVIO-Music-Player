@@ -32,6 +32,11 @@ export const usePlayerStore = create<PlayerState>()(
 
       // UI State
       toasts: [],
+      isQueueOpen: false,
+      isKeyboardHelpOpen: false,
+
+      // Cache State
+      apiCache: {},
 
       // Actions
       play: (track, context) => {
@@ -257,6 +262,8 @@ export const usePlayerStore = create<PlayerState>()(
       }),
 
       setExpanded: (expanded) => set({ isExpanded: expanded }),
+      setQueueOpen: (isOpen) => set({ isQueueOpen: isOpen }),
+      setKeyboardHelpOpen: (isOpen) => set({ isKeyboardHelpOpen: isOpen }),
 
       // UI Actions
       showToast: (message, type = 'info', undoAction) => {
@@ -275,13 +282,31 @@ export const usePlayerStore = create<PlayerState>()(
         toasts: state.toasts.filter((t) => t.id !== id)
       })),
 
+      reorderQueue: (startIndex, endIndex) => set((state) => {
+        const result = Array.from(state.queue);
+        const [removed] = result.splice(startIndex, 1);
+        result.splice(endIndex, 0, removed);
+        
+        let newIndex = state.queueIndex;
+        if (startIndex === state.queueIndex) {
+          newIndex = endIndex;
+        } else if (startIndex < state.queueIndex && endIndex >= state.queueIndex) {
+          newIndex--;
+        } else if (startIndex > state.queueIndex && endIndex <= state.queueIndex) {
+          newIndex++;
+        }
+        
+        return { queue: result, queueIndex: newIndex };
+      }),
+
       // Library Actions
-      createPlaylist: (name) => set((state) => ({
+      createPlaylist: (name, description) => set((state) => ({
         playlists: [
           ...state.playlists,
           {
             id: `pl_${Math.random().toString(36).substring(2, 11)}`,
             name,
+            description,
             tracks: [],
             createdAt: new Date().toISOString()
           }
@@ -313,6 +338,24 @@ export const usePlayerStore = create<PlayerState>()(
       })),
 
       clearSearchHistory: () => set({ searchHistory: [] }),
+      
+      // Cache Actions
+      setCache: (key, data) => set((state) => ({
+        apiCache: {
+          ...state.apiCache,
+          [key]: { data, timestamp: Date.now() }
+        }
+      })),
+      
+      getCache: (key) => {
+        const { apiCache } = get();
+        const entry = apiCache[key];
+        const CACHE_TTL = 30 * 60 * 1000; // 30 minutes
+        if (entry && Date.now() - entry.timestamp < CACHE_TTL) {
+          return entry.data;
+        }
+        return null;
+      }
     }),
     {
       name: 'sonivio-player-storage-v1',
@@ -328,7 +371,8 @@ export const usePlayerStore = create<PlayerState>()(
             listeningHistory: [],
             queue: [], // Force clear queue to avoid type mismatches with QueueItem
             queueIndex: -1,
-            currentQueueItem: null
+            currentQueueItem: null,
+            apiCache: {},
           };
         }
         return persistedState;
@@ -347,7 +391,9 @@ export const usePlayerStore = create<PlayerState>()(
         queue: state.queue,
         queueIndex: state.queueIndex,
         lastPlayedPosition: state.progress,
+        apiCache: state.apiCache,
       }),
     }
   )
 );
+

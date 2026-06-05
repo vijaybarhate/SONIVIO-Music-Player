@@ -5,6 +5,8 @@ import Home from './pages/Home';
 import Search from './pages/Search';
 import Library from './pages/Library';
 import About from './pages/About';
+import Artist from './pages/Artist';
+import PlaylistDetail from './pages/PlaylistDetail';
 
 const App: React.FC = () => {
   return (
@@ -17,7 +19,9 @@ const App: React.FC = () => {
           <Route path="favorites" element={<Library />} />
           <Route path="recent" element={<Library />} />
           <Route path="history" element={<Library />} />
-          <Route path="playlist/:id" element={<Library />} />
+          <Route path="artist/:channelId" element={<Artist />} />
+          <Route path="playlist/:id" element={<PlaylistDetail />} />
+          <Route path="my-playlist/:id" element={<PlaylistDetail />} />
           <Route path="about" element={<About />} />
           <Route path="*" element={<Home />} />
         </Route>

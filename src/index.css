@@ -2,89 +2,51 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  color-scheme: dark;
+@layer base {
+  :root {
+    --bg: #080810;
+    --surface: #0F0F1A;
+    --surface-elevated: #161625;
+    --text-primary: #F0F0FF;
+    --text-muted: #8888A8;
+    --stroke: #1E1E30;
+    --accent-start: #89AACC;
+    --accent-end: #7C6FCD;
+    --accent-gradient: linear-gradient(135deg, #89AACC 0%, #7C6FCD 100%);
+    --glow: rgba(124, 111, 205, 0.3);
+    
+    --glass-bg: rgba(255, 255, 255, 0.04);
+    --glass-border: rgba(255, 255, 255, 0.08);
+  }
+
+  body {
+    @apply bg-bg text-text-primary font-sans antialiased selection:bg-accent-start selection:text-text-primary;
+  }
 }
 
-* {
-  border-radius: 0 !important;
+@layer utilities {
+  .accent-gradient {
+    background-image: var(--accent-gradient);
+  }
+  .glass {
+    background-color: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    backdrop-filter: blur(24px);
+  }
 }
 
-body {
-  @apply bg-bg text-text font-mono antialiased overflow-x-hidden;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+/* Custom thin scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
 }
-
-/* Noise Texture Overlay */
-body::before {
-  content: "";
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  opacity: 0.03;
-  z-index: 9999;
-  pointer-events: none;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3欲%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+::-webkit-scrollbar-track {
+  background: transparent;
 }
-
-h1, h2, h3, h4, h5, h6 {
-  @apply font-display uppercase tracking-tight;
+::-webkit-scrollbar-thumb {
+  background: var(--stroke);
+  border-radius: 9999px;
 }
-
-/* Scrollbar - Industrial Style */
-::-webkit-scrollbar { width: 10px; }
-::-webkit-scrollbar-track { @apply bg-bg border-l border-border-hard; }
-::-webkit-scrollbar-thumb { @apply bg-border-hard hover:bg-text-sub transition-colors; }
-
-/* Buttons - Sharp and Bold */
-.btn-primary {
-  @apply bg-brand text-black font-bold py-3 px-6 text-sm uppercase tracking-widest transition-all;
-  @apply hover:bg-white hover:text-black border border-brand;
-}
-
-.btn-secondary {
-  @apply bg-transparent text-text border border-border-hard py-2.5 px-5 text-sm font-bold uppercase tracking-widest;
-  @apply hover:bg-white hover:text-black transition-all;
-}
-
-/* Cards - Grid-like */
-.card {
-  @apply bg-bg-light p-4 border border-border-hard hover:border-brand transition-all;
-}
-
-/* Range Input - Technical Style */
-input[type='range'] {
-  @apply appearance-none bg-transparent cursor-pointer;
-}
-input[type='range']::-webkit-slider-runnable-track {
-  @apply h-1 bg-border-hard;
-}
-input[type='range']::-webkit-slider-thumb {
-  @apply appearance-none w-4 h-4 bg-brand cursor-pointer -mt-1.5 border border-black;
-}
-input[type='range']::-webkit-slider-thumb:hover {
-  @apply bg-white;
-}
-
-/* Utility for Digital/LED text */
-.text-digital {
-  @apply font-mono text-brand filter drop-shadow-[0_0_2px_rgba(238,255,0,0.5)];
-}
-
-/* Marquee Effect for long titles */
-@keyframes marquee {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-100%); }
-}
-.marquee {
-  display: inline-block;
-  white-space: nowrap;
-  animation: marquee 10s linear infinite;
-}
-.marquee-container {
-  overflow: hidden;
-  white-space: nowrap;
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
 }

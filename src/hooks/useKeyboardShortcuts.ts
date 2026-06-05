@@ -13,7 +13,14 @@ export const useKeyboardShortcuts = () => {
     currentTrack, 
     toggleLike,
     isExpanded,
-    setExpanded
+    setExpanded,
+    volume,
+    setVolume,
+    progress,
+    duration,
+    seek,
+    setKeyboardHelpOpen,
+    isKeyboardHelpOpen
   } = usePlayerStore();
 
   const navigate = useNavigate();
@@ -48,6 +55,7 @@ export const useKeyboardShortcuts = () => {
         case 'KeyM':
           toggleMute();
           break;
+        case 'KeyF':
         case 'KeyL':
           if (currentTrack) toggleLike(currentTrack);
           break;
@@ -58,7 +66,7 @@ export const useKeyboardShortcuts = () => {
           }
           // Delay to allow navigation/rendering before focusing
           setTimeout(() => {
-            const searchInput = document.querySelector('input[placeholder*="QUERY"]') as HTMLInputElement;
+            const searchInput = document.querySelector('input[placeholder*="listen"]') as HTMLInputElement;
             searchInput?.focus();
           }, 50);
           break;
@@ -66,11 +74,44 @@ export const useKeyboardShortcuts = () => {
           if (isExpanded) {
             setExpanded(false);
           }
+          if (isKeyboardHelpOpen) {
+            setKeyboardHelpOpen(false);
+          }
           break;
+        case 'ArrowLeft':
+          e.preventDefault();
+          if (currentTrack) {
+            seek(Math.max(0, progress - 10));
+          }
+          break;
+        case 'ArrowRight':
+          e.preventDefault();
+          if (currentTrack) {
+            seek(Math.min(duration, progress + 10));
+          }
+          break;
+        case 'ArrowUp':
+          e.preventDefault();
+          setVolume(Math.min(100, volume + 10));
+          break;
+        case 'ArrowDown':
+          e.preventDefault();
+          setVolume(Math.max(0, volume - 10));
+          break;
+      }
+
+      // Handle '?' which is shift + /
+      if (e.key === '?') {
+        e.preventDefault();
+        setKeyboardHelpOpen(!isKeyboardHelpOpen);
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isPlaying, play, pause, next, previous, toggleMute, currentTrack, toggleLike, isExpanded, setExpanded, navigate, location]);
+  }, [
+    isPlaying, play, pause, next, previous, toggleMute, currentTrack, 
+    toggleLike, isExpanded, setExpanded, navigate, location,
+    volume, setVolume, progress, duration, seek, setKeyboardHelpOpen, isKeyboardHelpOpen
+  ]);
 };

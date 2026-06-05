@@ -1,5 +1,4 @@
 import React from 'react';
-import { motion } from 'framer-motion';
 import { AlertTriangle, Inbox } from 'lucide-react';
 
 interface FeedbackProps {
@@ -11,57 +10,39 @@ interface FeedbackProps {
 }
 
 export const LoadingState: React.FC<FeedbackProps> = ({ 
-  title = "Processing_Data", 
-  message = "Syncing with global audio archives..." 
+  title = "Loading...", 
+  message = "Please wait while we fetch your content." 
 }) => {
   return (
-    <div className="flex flex-col items-center justify-center py-32 px-8 text-center gap-6">
-      <div className="relative w-16 h-16">
-        {[0, 1, 2, 3].map((i) => (
-          <motion.div
-            key={i}
-            animate={{ 
-              opacity: [0.2, 1, 0.2],
-              scale: [1, 1.2, 1]
-            }}
-            transition={{ 
-              duration: 0.8, 
-              repeat: Infinity, 
-              delay: i * 0.2 
-            }}
-            className={`absolute w-6 h-6 bg-brand border border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]
-              ${i === 0 ? 'top-0 left-0' : i === 1 ? 'top-0 right-0' : i === 2 ? 'bottom-0 left-0' : 'bottom-0 right-0'}
-            `}
-          />
-        ))}
-      </div>
+    <div className="flex flex-col items-center justify-center py-20 text-center gap-6">
+      <div className="w-12 h-12 rounded-full border-4 border-surface-elevated border-t-accent-start animate-spin" />
       <div className="space-y-2">
-        <h3 className="font-display text-2xl uppercase tracking-tight text-brand">{title}</h3>
-        <p className="font-mono text-[10px] text-text-sub uppercase tracking-[0.2em]">{message}</p>
+        <h3 className="font-sans font-bold text-xl text-text-primary">{title}</h3>
+        <p className="font-sans text-sm text-text-muted">{message}</p>
       </div>
     </div>
   );
 };
 
 export const EmptyState: React.FC<FeedbackProps> = ({ 
-  title = "Archive_Empty", 
-  message = "No data points detected in this sector.",
+  title = "Nothing found", 
+  message = "There's no content to display here.",
   actionLabel,
   onAction,
   icon = <Inbox size={48} />
 }) => {
   return (
-    <div className="flex flex-col items-start py-20 px-8 border-t border-border-hard">
-      <div className="text-brand/30 mb-8">
+    <div className="flex flex-col items-center py-20 text-center">
+      <div className="text-text-muted mb-6 bg-surface-elevated p-6 rounded-full shadow-inner">
         {icon}
       </div>
-      <h3 className="text-4xl font-display uppercase tracking-tight text-brand mb-4">{title}</h3>
-      <p className="font-mono text-text-sub uppercase tracking-widest max-w-md mb-8 leading-loose">{message}</p>
+      <h3 className="text-2xl font-sans font-bold text-text-primary mb-3">{title}</h3>
+      <p className="font-sans text-sm text-text-muted max-w-md mb-8">{message}</p>
       
       {actionLabel && onAction && (
         <button
           onClick={onAction}
-          className="bg-brand text-black font-display text-xl px-10 py-4 uppercase hover:bg-white hover:text-black transition-all border border-black shadow-[8px_8px_0px_0px_rgba(238,255,0,0.3)] hover:shadow-none"
+          className="px-8 py-3 rounded-full accent-gradient text-white font-sans font-medium text-sm shadow-glow hover:scale-105 transition-transform"
         >
           {actionLabel}
         </button>
@@ -71,23 +52,23 @@ export const EmptyState: React.FC<FeedbackProps> = ({
 };
 
 export const ErrorState: React.FC<FeedbackProps> = ({ 
-  title = "System_Failure", 
-  message = "An unexpected error occurred during operation.",
-  actionLabel = "Retry_Sync",
+  title = "Failed to load", 
+  message = "An unexpected error occurred.",
+  actionLabel = "Retry",
   onAction,
-  icon = <AlertTriangle size={48} />
+  icon = <AlertTriangle size={24} />
 }) => {
   return (
-    <div className="flex flex-col items-start py-20 px-8 border-t border-border-hard bg-red-950/10">
-      <div className="text-red-500 mb-8">
+    <div className="flex flex-col items-center py-10 px-6 rounded-2xl glass border border-red-500/20 bg-red-500/5">
+      <div className="text-red-400 mb-4">
         {icon}
       </div>
-      <h3 className="text-4xl font-display uppercase tracking-tight text-red-500 mb-4">{title}</h3>
-      <p className="font-mono text-text-sub uppercase tracking-widest max-w-md mb-8 leading-loose">{message}</p>
+      <h3 className="text-lg font-sans font-bold text-text-primary mb-2">{title}</h3>
+      <p className="font-sans text-xs text-text-muted max-w-sm mb-6 text-center">{message}</p>
       
       <button
         onClick={onAction || (() => window.location.reload())}
-        className="bg-red-600 text-white font-display text-xl px-10 py-4 uppercase hover:bg-white hover:text-black transition-all border border-black shadow-[8px_8px_0px_0px_rgba(220,38,38,0.3)] hover:shadow-none"
+        className="px-6 py-2 rounded-full bg-surface-elevated text-text-primary font-sans text-sm hover:bg-surface border border-stroke transition-colors"
       >
         {actionLabel}
       </button>
@@ -96,11 +77,27 @@ export const ErrorState: React.FC<FeedbackProps> = ({
 };
 
 export const SkeletonLoader: React.FC = () => (
-  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-0 border-l border-t border-border-hard">
+  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
     {[...Array(10)].map((_, i) => (
-      <div key={i} className="border-r border-b border-border-hard aspect-square p-4 bg-bg-light animate-pulse">
-        <div className="w-full h-full bg-white/5" />
+      <div key={i} className="rounded-2xl overflow-hidden animate-pulse bg-gradient-to-r from-surface via-surface-elevated to-surface">
+        <div className="aspect-square w-full bg-surface-elevated" />
+        <div className="p-4">
+          <div className="h-4 bg-surface rounded w-3/4 mb-2" />
+          <div className="h-3 bg-surface rounded w-1/2" />
+        </div>
       </div>
     ))}
+  </div>
+);
+
+export const InlineError: React.FC<{ message?: string; onRetry?: () => void }> = ({ message = "Failed to load.", onRetry }) => (
+  <div className="flex items-center gap-3 p-3 rounded-lg bg-red-500/10 border border-red-500/20">
+    <AlertTriangle size={16} className="text-red-400" />
+    <span className="text-sm font-sans text-red-200">{message}</span>
+    {onRetry && (
+      <button onClick={onRetry} className="ml-auto text-xs font-medium text-red-400 hover:text-red-300">
+        [Retry]
+      </button>
+    )}
   </div>
 );

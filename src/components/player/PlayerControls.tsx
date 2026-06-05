@@ -1,9 +1,12 @@
 import React from 'react';
 import { Play, Pause, SkipBack, SkipForward, Shuffle, Repeat, Repeat1 } from 'lucide-react';
 import { usePlayerStore } from '../../store/playerStore';
-import { motion } from 'framer-motion';
 
-const PlayerControls: React.FC = () => {
+interface PlayerControlsProps {
+  compact?: boolean;
+}
+
+const PlayerControls: React.FC<PlayerControlsProps> = ({ compact }) => {
   const {
     isPlaying,
     shuffle,
@@ -30,51 +33,48 @@ const PlayerControls: React.FC = () => {
   const canPrev = queue.length > 0 && (repeatMode === 'all' || queueIndex > 0 || progress > 3);
 
   return (
-    <div className="flex items-center gap-6">
-      <button
-        onClick={toggleShuffle}
-        className={`transition-all ${shuffle ? 'text-brand' : 'text-text-sub hover:text-white'}`}
-        title="SHUFFLE_MODE"
-      >
-        <Shuffle size={16} strokeWidth={shuffle ? 3 : 2} />
-      </button>
+    <div className="flex items-center gap-4 md:gap-6">
+      {!compact && (
+        <button
+          onClick={toggleShuffle}
+          className={`transition-all ${shuffle ? 'text-accent-start' : 'text-text-muted hover:text-text-primary'}`}
+        >
+          <Shuffle size={16} strokeWidth={shuffle ? 3 : 2} />
+        </button>
+      )}
 
       <button
         onClick={previous}
         disabled={!canPrev}
-        className={`transition-colors ${canPrev ? 'text-text-sub hover:text-white' : 'text-text-sub/20 cursor-not-allowed'}`}
-        title="PREV_TRACK"
+        className={`transition-colors ${canPrev ? 'text-text-muted hover:text-text-primary' : 'text-text-muted/20 cursor-not-allowed'}`}
       >
-        <SkipBack size={22} fill="currentColor" />
+        <SkipBack size={20} fill="currentColor" />
       </button>
 
-      <motion.button
+      <button
         onClick={() => (isPlaying ? pause() : play())}
-        whileHover={{ scale: currentTrack ? 1.05 : 1 }}
-        whileTap={{ scale: currentTrack ? 0.95 : 1 }}
         disabled={!currentTrack}
-        className={`w-12 h-12 flex items-center justify-center bg-brand text-black border border-black transition-all shadow-[4px_4px_0px_0px_rgba(238,255,0,0.3)] hover:shadow-none ${!currentTrack ? 'opacity-50 grayscale cursor-not-allowed' : 'hover:bg-white'}`}
-        title={isPlaying ? "PAUSE_SYSTEM" : "INITIALIZE_PLAYBACK"}
+        className={`w-9 h-9 md:w-10 md:h-10 flex items-center justify-center rounded-full bg-text-primary text-bg hover:scale-105 active:scale-95 transition-all ${!currentTrack ? 'opacity-50 cursor-not-allowed' : ''}`}
       >
-        {isPlaying ? <Pause size={24} fill="currentColor" /> : <Play size={24} fill="currentColor" className="ml-1" />}
-      </motion.button>
+        {isPlaying ? <Pause size={18} fill="currentColor" /> : <Play size={18} fill="currentColor" className="ml-1" />}
+      </button>
 
       <button
         onClick={next}
         disabled={!canNext}
-        className={`transition-colors ${canNext ? 'text-text-sub hover:text-white' : 'text-text-sub/20 cursor-not-allowed'}`}
-        title="NEXT_TRACK"
+        className={`transition-colors ${canNext ? 'text-text-muted hover:text-text-primary' : 'text-text-muted/20 cursor-not-allowed'}`}
       >
-        <SkipForward size={22} fill="currentColor" />
+        <SkipForward size={20} fill="currentColor" />
       </button>
 
-      <button
-        onClick={handleRepeatClick}
-        className={`transition-all ${repeatMode !== 'none' ? 'text-brand' : 'text-text-sub hover:text-white'}`}
-        title="REPEAT_MODE"
-      >
-        {repeatMode === 'one' ? <Repeat1 size={16} strokeWidth={3} /> : <Repeat size={16} strokeWidth={repeatMode === 'all' ? 3 : 2} />}
-      </button>
+      {!compact && (
+        <button
+          onClick={handleRepeatClick}
+          className={`transition-all ${repeatMode !== 'none' ? 'text-accent-start' : 'text-text-muted hover:text-text-primary'}`}
+        >
+          {repeatMode === 'one' ? <Repeat1 size={16} strokeWidth={3} /> : <Repeat size={16} strokeWidth={repeatMode === 'all' ? 3 : 2} />}
+        </button>
+      )}
     </div>
   );
 };

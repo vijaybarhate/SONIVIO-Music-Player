@@ -18,74 +18,65 @@ const BottomPlayer: React.FC = () => {
       <AnimatePresence>
         {currentTrack && (
           <motion.div
-            initial={{ y: 100 }}
+            initial={{ y: 88 }}
             animate={{ y: 0 }}
-            exit={{ y: 100 }}
-            className="fixed bottom-16 md:bottom-0 left-0 right-0 z-50 px-0"
+            exit={{ y: 88 }}
+            className="fixed bottom-0 left-0 right-0 z-50 h-[88px]"
           >
-            <div className="bg-bg border-t border-border-hard p-3 md:p-4 flex items-center justify-between gap-4 relative overflow-hidden">
-              {/* Background Label */}
-              <div className="absolute top-0 right-4 text-[60px] font-display text-white/[0.03] pointer-events-none select-none leading-none">
-                PLAYBACK_SYSTEM_01
-              </div>
-
-              {/* Track Info */}
-              <div className="flex items-center gap-4 min-w-0 flex-1 md:flex-none md:w-[30%]">
+            <div className="h-full bg-surface/80 backdrop-blur-2xl border-t border-stroke px-4 md:px-6 flex items-center justify-between gap-4">
+              {/* Left: Track Info */}
+              <div className="flex items-center gap-4 min-w-0 md:w-[30%]">
                 <div
                   onClick={() => setExpanded(true)}
-                  className="relative group flex-shrink-0 cursor-pointer border border-border-hard"
+                  className="relative group flex-shrink-0 cursor-pointer rounded-lg overflow-hidden border border-stroke"
                 >
                   <img
                     src={currentTrack.thumbnail}
                     alt={currentTrack.title}
-                    className="w-14 h-14 md:w-16 md:h-16 object-cover grayscale group-hover:grayscale-0 transition-all"
+                    className="w-12 h-12 object-cover transition-transform duration-300 group-hover:scale-105"
                   />
-                  <div className="absolute inset-0 bg-brand/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                    <Maximize2 size={16} className="text-black bg-brand p-1" />
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                    <Maximize2 size={16} className="text-white drop-shadow-md" />
                   </div>
                 </div>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-[10px] font-mono text-brand bg-brand/10 px-1 border border-brand/20">NOW_PLAYING</span>
-                    <button
-                      onClick={() => toggleLike(currentTrack)}
-                      className={`transition-colors ${isLiked ? 'text-brand' : 'text-text-sub hover:text-brand'}`}
-                    >
-                      <Heart size={14} fill={isLiked ? "currentColor" : "none"} />
-                    </button>
-                  </div>
+                <div className="min-w-0">
                   <h4
                     onClick={() => setExpanded(true)}
-                    className="text-sm font-bold font-mono tracking-tight truncate text-text hover:text-brand cursor-pointer uppercase"
+                    className="text-sm font-sans font-medium truncate text-text-primary hover:text-accent-start cursor-pointer transition-colors"
                   >
                     {currentTrack.title}
                   </h4>
-                  <p className="text-[11px] font-mono text-text-sub truncate uppercase tracking-wider">
-                    SRC: {currentTrack.artist}
+                  <p className="text-xs font-sans text-text-muted truncate">
+                    {currentTrack.artist}
                   </p>
                 </div>
               </div>
 
-              {/* Controls */}
-              <div className="hidden md:flex flex-col items-center gap-3 flex-1 max-w-2xl px-8 border-x border-border-hard">
+              {/* Center: Controls & Progress */}
+              <div className="hidden md:flex flex-col items-center justify-center gap-1.5 flex-1 max-w-2xl px-8 mt-1">
                 <PlayerControls />
                 <ProgressBar />
               </div>
 
-              {/* Right Side */}
-              <div className="flex items-center gap-6 md:w-[30%] justify-end">
+              {/* Right: Actions */}
+              <div className="flex items-center gap-4 md:w-[30%] justify-end">
+                <button
+                  onClick={() => toggleLike(currentTrack)}
+                  className={`transition-colors ${isLiked ? 'text-accent-start' : 'text-text-muted hover:text-text-primary'}`}
+                >
+                  <Heart size={18} fill={isLiked ? "currentColor" : "none"} />
+                </button>
                 <div className="md:hidden">
-                  <PlayerControls />
+                  <PlayerControls compact />
                 </div>
-                <div className="hidden md:flex items-center gap-6">
+                <div className="hidden md:flex items-center gap-4">
                   <button
                     onClick={() => setIsQueueOpen(true)}
-                    className={`flex flex-col items-center gap-1 transition-all ${isQueueOpen ? 'text-brand' : 'text-text-sub hover:text-brand'}`}
+                    className={`transition-colors ${isQueueOpen ? 'text-accent-start' : 'text-text-muted hover:text-text-primary'}`}
                   >
                     <ListMusic size={18} />
-                    <span className="text-[9px] font-mono uppercase">Queue</span>
                   </button>
-                  <div className="w-px h-8 bg-border-hard" />
+                  <div className="w-px h-6 bg-stroke" />
                   <VolumeControl />
                 </div>
               </div>

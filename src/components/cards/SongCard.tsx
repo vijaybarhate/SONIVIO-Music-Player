@@ -8,10 +8,10 @@ import ContextMenu from '../common/ContextMenu';
 interface SongCardProps {
   track: Track;
   context?: Track[];
-  source?: string;
+  variant?: 'vertical' | 'horizontal';
 }
 
-const SongCard: React.FC<SongCardProps> = ({ track, context, source }) => {
+const SongCard: React.FC<SongCardProps> = ({ track, context, variant = 'vertical' }) => {
   const { play, currentTrack, likedSongs, toggleLike, isPlaying } = usePlayerStore();
   const [contextMenu, setContextMenu] = useState<{ isOpen: boolean; x: number; y: number }>({
     isOpen: false,
@@ -41,104 +41,117 @@ const SongCard: React.FC<SongCardProps> = ({ track, context, source }) => {
     });
   };
 
+  if (variant === 'horizontal') {
+    return (
+      <div
+        onClick={() => play(track, context)}
+        onContextMenu={handleContextMenu}
+        className={`flex items-center gap-4 p-3 rounded-xl cursor-pointer group transition-colors duration-200 ${isActive ? 'bg-surface-elevated' : 'hover:bg-surface-elevated'}`}
+      >
+        <div className="relative w-12 h-12 rounded-md overflow-hidden flex-shrink-0">
+          <img src={track.thumbnail} alt={track.title} className="w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+            {isActive && isPlaying ? (
+              <div className="flex gap-0.5 items-end h-3">
+                {[1, 2, 3].map((i) => (
+                  <motion.div
+                    key={i}
+                    animate={{ height: [2, 8, 2] }}
+                    transition={{ repeat: Infinity, duration: 0.6, delay: i * 0.12 }}
+                    className="w-0.5 bg-white"
+                  />
+                ))}
+              </div>
+            ) : (
+              <Play size={14} className="text-white ml-0.5" fill="currentColor" />
+            )}
+          </div>
+        </div>
+        <div className="min-w-0 flex-1">
+          <h4 className={`font-sans font-medium text-sm truncate ${isActive ? 'text-accent-start' : 'text-text-primary'}`}>
+            {track.title}
+          </h4>
+          <p className="font-sans text-xs text-text-muted truncate">
+            {track.artist}
+          </p>
+        </div>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            toggleLike(track);
+          }}
+          className={`p-2 transition-opacity ${isLiked ? 'text-accent-start opacity-100' : 'text-text-muted opacity-0 group-hover:opacity-100 hover:text-text-primary'}`}
+        >
+          <Heart size={16} fill={isLiked ? "currentColor" : "none"} />
+        </button>
+        <button
+          onClick={handleMoreClick}
+          className="p-2 text-text-muted opacity-0 group-hover:opacity-100 hover:text-text-primary transition-opacity"
+        >
+          <MoreVertical size={16} />
+        </button>
+      </div>
+    );
+  }
+
   return (
     <>
-      <motion.div
-        className={`
-          relative group p-4 transition-all cursor-pointer h-full flex flex-col
-          ${isActive ? 'bg-brand/5' : 'hover:bg-white/[0.03]'}
-        `}
+      <div
+        className="bg-surface rounded-2xl overflow-hidden group cursor-pointer hover:scale-[1.02] hover:-translate-y-1 transition-all duration-300 hover:shadow-glow flex flex-col h-full"
+        style={{ transitionTimingFunction: 'cubic-bezier(0.34, 1.56, 0.64, 1)' }}
         onClick={() => play(track, context)}
         onContextMenu={handleContextMenu}
       >
-        {/* Image Container */}
-        <div className="relative aspect-square overflow-hidden mb-4 border border-border-hard group-hover:border-brand transition-colors">
-          <img
-            src={track.thumbnail}
-            alt={track.title}
-            className={`w-full h-full object-cover transition-all duration-500 group-hover:scale-105 ${isActive ? 'grayscale-0 opacity-100' : 'grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100'}`}
-          />
-
-          {/* Play Overlay */}
-          <div className={`absolute inset-0 bg-black/40 transition-opacity flex items-center justify-center ${isActive ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
-            <motion.div
-              className="w-12 h-12 flex items-center justify-center bg-brand text-black border border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
-            >
-              {isActive && isPlaying ? (
-                <div className="flex gap-0.5 items-end h-4">
-                  {[1, 2, 3].map((i) => (
-                    <motion.div
-                      key={i}
-                      animate={{ height: [4, 12, 4] }}
-                      transition={{ repeat: Infinity, duration: 0.6, delay: i * 0.12 }}
-                      className="w-1 bg-black"
-                    />
-                  ))}
-                </div>
-              ) : (
-                <Play size={20} fill="currentColor" className="ml-1" />
-              )}
-            </motion.div>
-          </div>
-
-          {/* Top Indicators */}
-          <div className="absolute top-0 left-0 right-0 p-2 flex justify-between items-start">
-            {isActive ? (
-              <div className="px-1.5 py-0.5 bg-brand text-black text-[9px] font-mono font-bold border border-black flex items-center gap-1">
-                ACTIVE_SIGNAL
-              </div>
-            ) : (
-              <div className="text-[9px] font-mono text-white/40 group-hover:text-brand transition-colors">
-                TRK_{track.id?.slice(0, 4).toUpperCase()}
-              </div>
-            )}
+        <div className="p-3 pb-0">
+          <div className="relative aspect-square w-full rounded-xl overflow-hidden shadow-sm">
+            <img
+              src={track.thumbnail}
+              alt={track.title}
+              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+            />
             
-            <div className="flex items-center gap-1">
+            <div className={`absolute inset-0 bg-black/40 flex items-center justify-center transition-opacity duration-300 ${isActive ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
+              <div className="w-12 h-12 rounded-full accent-gradient flex items-center justify-center shadow-lg transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
+                {isActive && isPlaying ? (
+                  <div className="flex gap-0.5 items-end h-4">
+                    {[1, 2, 3].map((i) => (
+                      <motion.div
+                        key={i}
+                        animate={{ height: [4, 12, 4] }}
+                        transition={{ repeat: Infinity, duration: 0.6, delay: i * 0.12 }}
+                        className="w-1 bg-white"
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <Play size={20} fill="currentColor" className="text-white ml-1" />
+                )}
+              </div>
+            </div>
+
+            <div className="absolute top-2 right-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   toggleLike(track);
                 }}
-                className={`p-1 border border-black transition-all ${
-                  isLiked ? 'text-black bg-brand' : 'text-white/40 bg-black opacity-0 group-hover:opacity-100 hover:text-brand'
-                }`}
+                className={`p-1.5 rounded-full glass ${isLiked ? 'text-accent-start' : 'text-white hover:text-accent-start'}`}
               >
-                <Heart size={10} fill={isLiked ? "currentColor" : "none"} />
-              </button>
-              <button
-                onClick={handleMoreClick}
-                className="p-1 border border-black text-white/40 bg-black opacity-0 group-hover:opacity-100 hover:text-brand transition-all"
-              >
-                <MoreVertical size={10} />
+                <Heart size={14} fill={isLiked ? "currentColor" : "none"} />
               </button>
             </div>
           </div>
-
-          {/* Source Badge */}
-          {source && (
-            <div className="absolute bottom-2 left-2 px-1.5 py-0.5 bg-bg-light/90 border border-border-hard backdrop-blur-sm text-[8px] font-mono text-text-sub uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">
-              {source}
-            </div>
-          )}
         </div>
 
-        {/* Info Section */}
-        <div className="flex-1 flex flex-col justify-between">
-          <div>
-            <h3 className={`font-mono font-bold text-xs uppercase tracking-tight mb-1 line-clamp-2 ${isActive ? 'text-brand' : 'text-text'}`}>
-              {track.title}
-            </h3>
-            <p className="text-[10px] font-mono text-text-sub uppercase tracking-wider line-clamp-1">
-              {track.artist}
-            </p>
-          </div>
-          
-          <div className="mt-4 flex items-center justify-between border-t border-border-hard/50 pt-2 opacity-0 group-hover:opacity-100 transition-opacity">
-            <span className="text-[8px] font-mono text-text-sub">LOAD_COMPLETE</span>
-            <span className="text-[8px] font-mono text-brand">V1.0</span>
-          </div>
+        <div className="p-4 flex flex-col gap-1">
+          <h3 className={`font-sans font-medium text-sm truncate ${isActive ? 'text-accent-start' : 'text-text-primary'}`}>
+            {track.title}
+          </h3>
+          <p className="font-sans text-xs text-text-muted truncate">
+            {track.artist}
+          </p>
         </div>
-      </motion.div>
+      </div>
 
       <ContextMenu 
         isOpen={contextMenu.isOpen}

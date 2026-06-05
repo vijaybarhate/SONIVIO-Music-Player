@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { Search as SearchIcon, X, Clock, Trash2, Library as LibraryIcon } from 'lucide-react';
-import { searchTracks } from '../services/youtube';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Search as SearchIcon, X, Clock, Trash2 } from 'lucide-react';
+import { searchTracks, searchArtists, searchPlaylists } from '../services/youtube';
 import { Track } from '../types';
 import SongCard from '../components/cards/SongCard';
 import { SkeletonLoader, EmptyState } from '../components/common/FeedbackStates';
@@ -8,231 +8,284 @@ import { usePlayerStore } from '../store/playerStore';
 import { useDebounce } from '../hooks/useDebounce';
 import { motion, AnimatePresence } from 'framer-motion';
 
+type SearchTab = 'songs' | 'artists' | 'playlists';
+
 const Search: React.FC = () => {
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState<Track[]>([]);
+  const [activeTab, setActiveTab] = useState<SearchTab>('songs');
+  const [tracks, setTracks] = useState<Track[]>([]);
+  const [artists, setArtists] = useState<any[]>([]);
+  const [playlists, setPlaylists] = useState<any[]>([]);
+  const [suggestions, setSuggestions] = useState<Track[]>([]);
+  
   const [loading, setLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState<'all' | 'tracks' | 'playlists'>('all');
   const [isInputFocused, setIsInputFocused] = useState(false);
   
   const debouncedQuery = useDebounce(query, 500);
-  const { searchHistory, addToSearchHistory, clearSearchHistory, playlists } = usePlayerStore();
+  const { searchHistory, addToSearchHistory, clearSearchHistory, play } = usePlayerStore();
 
   const genres = [
-    { label: 'Phonk', query: 'phonk music 2026' },
-    { label: 'Synthwave', query: 'synthwave retrowave' },
-    { label: 'Lo-Fi', query: 'lofi hip hop chill beats' },
-    { label: 'Techno', query: 'industrial techno dark' },
-    { label: 'Ambient', query: 'ambient sleep music' },
-    { label: 'Indie', query: 'indie alternative' },
+    { label: 'Music', gradient: 'from-blue-600 to-purple-600', query: 'popular music 2026' },
+    { label: 'Podcasts', gradient: 'from-emerald-500 to-teal-700', query: 'top podcasts' },
+    { label: 'Hip-Hop', gradient: 'from-orange-500 to-red-600', query: 'hip hop rap' },
+    { label: 'Electronic', gradient: 'from-pink-500 to-purple-700', query: 'electronic dance music' },
+    { label: 'Pop', gradient: 'from-yellow-400 to-orange-500', query: 'pop hits' },
+    { label: 'Rock', gradient: 'from-red-600 to-gray-900', query: 'rock classics' },
+    { label: 'Jazz', gradient: 'from-indigo-500 to-blue-800', query: 'smooth jazz' },
+    { label: 'Lo-Fi', gradient: 'from-teal-400 to-blue-500', query: 'lofi hip hop chill' },
+    { label: 'Bollywood', gradient: 'from-fuchsia-600 to-pink-500', query: 'bollywood hits' },
+    { label: 'K-Pop', gradient: 'from-indigo-400 to-cyan-400', query: 'kpop trending' },
+    { label: 'EDM', gradient: 'from-violet-500 to-purple-500', query: 'edm party' },
+    { label: 'Classical', gradient: 'from-amber-600 to-orange-700', query: 'classical music' },
+    { label: 'Devotional', gradient: 'from-orange-400 to-rose-400', query: 'devotional songs' },
+    { label: 'Punjabi', gradient: 'from-yellow-500 to-orange-500', query: 'latest punjabi songs' },
+    { label: 'Tamil', gradient: 'from-red-500 to-orange-500', query: 'tamil hit songs' },
+    { label: 'Chill', gradient: 'from-cyan-500 to-blue-500', query: 'chill vibes' },
   ];
 
+  const performSearch = useCallback(async () => {
+    if (!debouncedQuery.trim()) {
+      setTracks([]);
+      setArtists([]);
+      setPlaylists([]);
+      return;
+    }
+
+    setLoading(true);
+    try {
+      if (activeTab === 'songs') {
+        const res = await searchTracks(debouncedQuery, 20);
+        setTracks(res);
+      } else if (activeTab === 'artists') {
+        const res = await searchArtists(debouncedQuery, 12);
+        setArtists(res);
+      } else if (activeTab === 'playlists') {
+        const res = await searchPlaylists(debouncedQuery, 12);
+        setPlaylists(res);
+      }
+      addToSearchHistory(debouncedQuery);
+    } catch (error) {
+      console.error('Search failed:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [debouncedQuery, activeTab, addToSearchHistory]);
+
   useEffect(() => {
-    const performSearch = async () => {
-      if (!debouncedQuery.trim()) {
-        setResults([]);
-        return;
-      }
-
-      setLoading(true);
-      try {
-        const tracks = await searchTracks(debouncedQuery);
-        setResults(tracks);
-        addToSearchHistory(debouncedQuery);
-      } catch (error) {
-        console.error('Search failed:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     performSearch();
-  }, [debouncedQuery]);
+  }, [performSearch]);
 
-  const filteredPlaylists = playlists.filter(p => 
-    p.name.toLowerCase().includes(query.toLowerCase())
-  );
+  // Live Suggestions (faster debounce could be used, but reusing debouncedQuery for simplicity)
+  useEffect(() => {
+    if (debouncedQuery.trim() && isInputFocused) {
+      searchTracks(debouncedQuery, 5).then(setSuggestions).catch(console.error);
+    } else {
+      setSuggestions([]);
+    }
+  }, [debouncedQuery, isInputFocused]);
+
+  const handleSuggestionClick = (track: Track) => {
+    setQuery(track.title);
+    play(track);
+  };
 
   return (
-    <div className="py-12 pb-32">
+    <motion.div 
+      initial={{ opacity: 0, y: 16 }} 
+      animate={{ opacity: 1, y: 0 }} 
+      transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
+      className="pb-12"
+    >
       {/* Search Header */}
-      <div className="px-8 pb-12 border-b border-border-hard mb-12">
-        <div className="flex items-center gap-2 mb-8">
-           <span className="w-8 h-px bg-brand" />
-           <p className="text-[10px] font-mono text-brand uppercase tracking-[0.3em]">System_Search</p>
-        </div>
-        
-        <h1 className="text-5xl md:text-8xl font-display uppercase tracking-tight mb-12">QUERY_INTERFACE</h1>
-
-        <div className="relative max-w-5xl border border-border-hard group focus-within:border-brand transition-colors bg-bg-light">
-          <div className="flex items-center px-6">
-            <SearchIcon size={24} className="text-brand" strokeWidth={3} />
+      <div className="mb-8">
+        <div className={`relative max-w-3xl mx-auto rounded-full glass transition-all duration-300 ${isInputFocused ? 'border-accent-start/50 shadow-glow' : ''}`}>
+          <div className="flex items-center px-6 py-4">
+            <SearchIcon size={24} className={isInputFocused ? 'text-accent-start' : 'text-text-muted'} />
             <input
               type="text"
-              placeholder="INITIALIZE_QUERY..."
+              placeholder="What do you want to listen to?"
               value={query}
               onFocus={() => setIsInputFocused(true)}
               onBlur={() => setTimeout(() => setIsInputFocused(false), 200)}
               onChange={(e) => setQuery(e.target.value)}
-              className="flex-1 bg-transparent border-none focus:outline-none text-text py-6 px-6 font-mono uppercase text-sm tracking-widest placeholder:text-text-sub/30"
+              className="flex-1 bg-transparent border-none focus:outline-none text-text-primary px-4 font-sans text-lg placeholder:text-text-muted"
             />
             {query && (
               <button
                 onClick={() => setQuery('')}
-                className="p-2 text-text-sub hover:text-brand transition-colors"
+                className="p-1 text-text-muted hover:text-text-primary transition-colors"
               >
-                <X size={24} />
+                <X size={20} />
               </button>
             )}
           </div>
 
-          {/* History Dropdown */}
+          {/* Dropdown (History or Suggestions) */}
           <AnimatePresence>
-            {isInputFocused && !query && searchHistory.length > 0 && (
+            {isInputFocused && (
               <motion.div
-                initial={{ opacity: 0, y: -10 }}
+                initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                className="absolute top-full left-[-1px] right-[-1px] z-50 bg-bg border border-brand p-6 shadow-[12px_12px_0px_0px_rgba(0,0,0,1)]"
+                exit={{ opacity: 0, y: 10 }}
+                className="absolute top-[calc(100%+12px)] left-0 right-0 z-50 glass rounded-2xl p-4 shadow-xl"
               >
-                <div className="flex justify-between items-center mb-6">
-                  <span className="font-mono text-[10px] text-brand uppercase tracking-widest">Recent_Queries</span>
-                  <button 
-                    onClick={clearSearchHistory}
-                    className="flex items-center gap-2 font-mono text-[9px] text-text-sub hover:text-red-500 uppercase tracking-widest transition-colors"
-                  >
-                    <Trash2 size={12} />
-                    Purge_History
-                  </button>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {searchHistory.map((h, i) => (
-                    <button
-                      key={i}
-                      onClick={() => setQuery(h)}
-                      className="flex items-center gap-3 px-4 py-2 bg-bg-light border border-border-hard hover:border-brand hover:text-brand transition-all font-mono text-[10px] uppercase tracking-wider"
-                    >
-                      <Clock size={12} />
-                      {h}
-                    </button>
-                  ))}
-                </div>
+                {!query && searchHistory.length > 0 && (
+                  <>
+                    <div className="flex justify-between items-center mb-4 px-2">
+                      <span className="font-sans text-xs font-semibold text-text-muted uppercase tracking-wider">Recent Searches</span>
+                      <button 
+                        onClick={clearSearchHistory}
+                        className="flex items-center gap-1 font-sans text-xs text-text-muted hover:text-red-400 transition-colors"
+                      >
+                        <Trash2 size={12} />
+                        Clear
+                      </button>
+                    </div>
+                    <div className="flex flex-col">
+                      {searchHistory.slice(0, 8).map((h, i) => (
+                        <button
+                          key={i}
+                          onClick={() => setQuery(h)}
+                          className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-surface-elevated transition-colors text-left"
+                        >
+                          <Clock size={16} className="text-text-muted" />
+                          <span className="font-sans text-sm text-text-primary flex-1 truncate">{h}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
+                
+                {query && suggestions.length > 0 && (
+                  <div className="flex flex-col">
+                    <span className="font-sans text-xs font-semibold text-text-muted uppercase tracking-wider mb-2 px-2">Suggestions</span>
+                    {suggestions.map((track) => (
+                      <button
+                        key={track.id}
+                        onClick={() => handleSuggestionClick(track)}
+                        className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-surface-elevated transition-colors text-left"
+                      >
+                        <SearchIcon size={16} className="text-text-muted" />
+                        <span className="font-sans text-sm text-text-primary flex-1 truncate">{track.title}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
               </motion.div>
             )}
           </AnimatePresence>
         </div>
-        
-        {/* Tabs */}
-        <div className="flex gap-8 mt-12">
-          {['all', 'tracks', 'playlists'].map((tab) => (
+      </div>
+
+      {/* Tabs */}
+      {query && (
+        <div className="flex items-center justify-center gap-4 mb-8">
+          {(['songs', 'artists', 'playlists'] as SearchTab[]).map((tab) => (
             <button
               key={tab}
-              onClick={() => setActiveTab(tab as any)}
-              className={`font-mono text-[10px] uppercase tracking-[0.3em] pb-2 border-b-2 transition-all ${
-                activeTab === tab ? 'text-brand border-brand' : 'text-text-sub border-transparent hover:text-white'
+              onClick={() => setActiveTab(tab)}
+              className={`px-6 py-2 rounded-full font-sans text-sm transition-all duration-300 ${
+                activeTab === tab 
+                  ? 'bg-text-primary text-bg font-medium shadow-glow' 
+                  : 'bg-surface hover:bg-surface-elevated text-text-primary'
               }`}
             >
-              {tab}_Signals
+              {tab.charAt(0).toUpperCase() + tab.slice(1)}
             </button>
           ))}
         </div>
-      </div>
+      )}
 
       {/* Content */}
-      <div className="px-8">
+      <div>
         <AnimatePresence mode="wait">
           {loading ? (
-            <motion.div key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-              <div className="mb-10 flex items-center gap-4">
-                 <div className="w-4 h-4 border-2 border-brand border-t-transparent animate-spin" />
-                 <span className="font-mono text-[10px] text-brand uppercase tracking-widest">Decoding_Data_Stream...</span>
-              </div>
+            <motion.div key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex flex-col gap-4">
               <SkeletonLoader />
             </motion.div>
-          ) : results.length > 0 || (activeTab === 'playlists' && filteredPlaylists.length > 0) ? (
+          ) : query ? (
             <motion.div
               key="results"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="space-y-16"
+              className="max-w-6xl mx-auto"
             >
-              {/* Tracks Section */}
-              {(activeTab === 'all' || activeTab === 'tracks') && results.length > 0 && (
-                <div>
-                   <h2 className="font-display text-3xl uppercase tracking-tighter mb-8 text-brand">Track_Archive</h2>
-                   <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-0 border-l border-t border-border-hard">
-                    {results.map((track) => (
-                      <div key={track.id} className="border-r border-b border-border-hard">
-                        <SongCard track={track} context={results} source="SEARCH_PTR" />
-                      </div>
+              {/* Songs Tab */}
+              {activeTab === 'songs' && (
+                tracks.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                    {tracks.map((track) => (
+                      <SongCard key={track.id} track={track} context={tracks} variant="horizontal" />
                     ))}
                   </div>
-                </div>
+                ) : (
+                  <EmptyState title="No songs found" message={`We couldn't find any songs for "${query}".`} />
+                )
               )}
 
-              {/* Playlists Section */}
-              {(activeTab === 'all' || activeTab === 'playlists') && filteredPlaylists.length > 0 && (
-                <div>
-                   <h2 className="font-display text-3xl uppercase tracking-tighter mb-8 text-brand">Playlist_Arrays</h2>
-                   <div className="grid grid-cols-1 md:grid-cols-3 gap-0 border-l border-t border-border-hard">
-                    {filteredPlaylists.map((p) => (
-                      <div 
-                        key={p.id} 
-                        className="p-8 border-r border-b border-border-hard bg-bg-light hover:bg-white hover:text-black transition-all group cursor-pointer"
-                      >
-                         <div className="flex justify-between items-start mb-12">
-                            <LibraryIcon size={24} className="text-brand group-hover:text-black transition-colors" />
-                            <span className="font-mono text-[9px] opacity-30">ARRAY_LINK</span>
-                         </div>
-                         <h3 className="font-display text-3xl uppercase tracking-tight">{p.name}</h3>
-                         <p className="font-mono text-[10px] uppercase tracking-widest mt-2">{p.tracks.length} Tracks</p>
+              {/* Artists Tab */}
+              {activeTab === 'artists' && (
+                artists.length > 0 ? (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
+                    {artists.map((artist) => (
+                      <div key={artist.id} className="flex flex-col items-center p-6 bg-surface hover:bg-surface-elevated transition-colors rounded-2xl cursor-pointer group">
+                        <div className="w-32 h-32 rounded-full overflow-hidden mb-4 shadow-lg group-hover:shadow-glow transition-all">
+                          <img src={artist.thumbnail} alt={artist.title} className="w-full h-full object-cover" />
+                        </div>
+                        <h3 className="font-sans font-bold text-center text-text-primary group-hover:text-accent-start transition-colors line-clamp-1">{artist.title}</h3>
+                        <p className="font-sans text-xs text-text-muted mt-1">Artist</p>
                       </div>
                     ))}
                   </div>
-                </div>
+                ) : (
+                  <EmptyState title="No artists found" message={`We couldn't find any artists for "${query}".`} />
+                )
+              )}
+
+              {/* Playlists Tab */}
+              {activeTab === 'playlists' && (
+                playlists.length > 0 ? (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
+                    {playlists.map((playlist) => (
+                      <div key={playlist.id} className="bg-surface hover:bg-surface-elevated transition-colors rounded-2xl overflow-hidden cursor-pointer group p-4">
+                        <div className="aspect-square rounded-xl overflow-hidden mb-4 shadow-md group-hover:shadow-glow transition-all">
+                          <img src={playlist.thumbnail} alt={playlist.title} className="w-full h-full object-cover" />
+                        </div>
+                        <h3 className="font-sans font-medium text-sm text-text-primary group-hover:text-accent-start transition-colors line-clamp-2">{playlist.title}</h3>
+                        <p className="font-sans text-xs text-text-muted mt-1 truncate">{playlist.artist}</p>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <EmptyState title="No playlists found" message={`We couldn't find any playlists for "${query}".`} />
+                )
               )}
             </motion.div>
-          ) : query && !loading ? (
-            <motion.div
-              key="empty"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-            >
-              <EmptyState 
-                title="ZERO_RESULTS" 
-                message={`The query "${query}" returned no matching data points in the global archive.`} 
-                actionLabel="Reset_Interface"
-                onAction={() => setQuery('')}
-              />
-            </motion.div>
           ) : (
-            <motion.div key="browse" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-              <div className="flex items-center gap-4 mb-10">
-                 <h2 className="text-xl font-display uppercase tracking-[0.4em] text-brand">Browse_Protocols</h2>
-                 <div className="flex-1 h-px bg-border-hard" />
-              </div>
-              <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-0 border-l border-t border-border-hard">
+            <motion.div key="browse" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-6xl mx-auto">
+              <h2 className="text-2xl font-sans font-bold mb-6 text-text-primary">Browse Categories</h2>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 md:gap-6">
                 {genres.map((genre, i) => (
-                  <motion.button
+                  <motion.div
                     key={genre.label}
-                    onClick={() => setQuery(genre.label)}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
+                    onClick={() => setQuery(genre.query)}
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: i * 0.03 }}
-                    className="aspect-square border-r border-b border-border-hard p-6 text-left relative group overflow-hidden bg-bg-light hover:bg-brand transition-all"
+                    className={`aspect-[4/3] rounded-2xl p-5 cursor-pointer relative overflow-hidden bg-gradient-to-br ${genre.gradient} group shadow-md hover:shadow-glow`}
                   >
-                    <div className="relative z-10 flex flex-col justify-between h-full">
-                      <span className="text-[10px] font-mono text-text-sub group-hover:text-black/50 uppercase tracking-[0.3em]">PROT_0{i+1}</span>
-                      <span className="font-display text-2xl group-hover:text-black uppercase leading-none tracking-tighter">{genre.label}</span>
-                    </div>
-                  </motion.button>
+                    <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors duration-300" />
+                    <h3 className="relative z-10 font-sans font-bold text-xl text-white tracking-tight drop-shadow-md">
+                      {genre.label}
+                    </h3>
+                  </motion.div>
                 ))}
               </div>
             </motion.div>
           )}
         </AnimatePresence>
       </div>
-    </div>
+    </motion.div>
   );
 };
 
