@@ -21,6 +21,7 @@ export default defineConfig({
   ],
   vite: {
     plugins: [tailwindcss() as any],
+    envPrefix: ['VITE_', 'PUBLIC_'],
     optimizeDeps: {
       include: ['picomatch']
     }
