@@ -64,8 +64,9 @@ export const useKeyboardShortcuts = () => {
         case 'Slash':
           e.preventDefault();
           if (typeof window !== 'undefined') {
-            if (window.location.pathname !== '/search') {
-              window.location.href = '/search';
+            const searchPath = `${import.meta.env.BASE_URL.replace(/\/$/, '')}/search`;
+            if (window.location.pathname !== searchPath) {
+              window.location.href = searchPath;
             }
             // Focus search input after transition
             setTimeout(() => {

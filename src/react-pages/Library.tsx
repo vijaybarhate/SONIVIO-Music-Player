@@ -96,7 +96,7 @@ const Library: React.FC = () => {
   });
 
   const handlePlaylistClick = (playlistId: string) => {
-    window.location.href = `/playlist/${playlistId}`;
+    window.location.href = `${import.meta.env.BASE_URL}playlist/${playlistId}`;
   };
 
   return (

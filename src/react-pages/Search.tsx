@@ -84,11 +84,11 @@ const Search: React.FC = () => {
   };
 
   const handleArtistClick = (channelId: string) => {
-    window.location.href = `/artist/${channelId}`;
+    window.location.href = `${import.meta.env.BASE_URL}artist/${channelId}`;
   };
 
   const handlePlaylistClick = (playlistId: string) => {
-    window.location.href = `/playlist/${playlistId}`;
+    window.location.href = `${import.meta.env.BASE_URL}playlist/${playlistId}`;
   };
 
   return (

@@ -10,16 +10,18 @@ const Sidebar: React.FC = () => {
   const { theme, toggleTheme } = useUiStore();
   const { currentTrack } = usePlayerStore();
 
+  const basePath = import.meta.env.BASE_URL.replace(/\/$/, ''); // Remove trailing slash
+
   const navItems = [
-    { icon: Home, label: 'Home', path: '/' },
-    { icon: Search, label: 'Search', path: '/search' },
-    { icon: Library, label: 'Your Library', path: '/library' },
-    { icon: Heart, label: 'Favorites', path: '/library?tab=favorites' },
+    { icon: Home, label: 'Home', path: `${basePath}/` },
+    { icon: Search, label: 'Search', path: `${basePath}/search` },
+    { icon: Library, label: 'Your Library', path: `${basePath}/library` },
+    { icon: Heart, label: 'Favorites', path: `${basePath}/library?tab=favorites` },
   ];
 
   const isLinkActive = (path: string) => {
-    if (path === '/') {
-      return currentPath === '/' || currentPath === '/index.html';
+    if (path === `${basePath}/`) {
+      return currentPath === `${basePath}/` || currentPath === `${basePath}/index.html` || currentPath === '';
     }
     return currentPath.startsWith(path);
   };
@@ -28,7 +30,7 @@ const Sidebar: React.FC = () => {
     <aside className={`w-16 md:w-60 bg-canvas border-r border-hairline flex flex-col h-full flex-shrink-0 transition-all duration-300 z-40 ${currentTrack ? 'pb-[88px]' : ''}`}>
       {/* Brand Logo Header */}
       <div className="h-16 flex items-center px-4 md:px-6 border-b border-hairline">
-        <a href="/" className="flex items-center gap-3 select-none">
+        <a href={`${basePath}/`} className="flex items-center gap-3 select-none">
           <div className="w-8 h-8 rounded-md bg-ink flex items-center justify-center flex-shrink-0 card-shadow-lvl3">
             <Music2 className="text-canvas w-4 h-4" />
           </div>
@@ -92,10 +94,10 @@ const Sidebar: React.FC = () => {
         </button>
 
         <a
-          href="/about"
+          href={`${basePath}/about`}
           className={`
             flex items-center gap-3 px-3 py-2 text-xs rounded-md transition-colors group focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-hairline-strong
-            ${isLinkActive('/about') 
+            ${isLinkActive(`${basePath}/about`) 
               ? 'bg-canvas-soft-2 text-ink font-medium' 
               : 'text-body hover:text-ink hover:bg-canvas-soft'
             }

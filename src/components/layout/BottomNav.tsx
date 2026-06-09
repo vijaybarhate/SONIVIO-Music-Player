@@ -9,15 +9,17 @@ const BottomNav: React.FC = () => {
   const { theme, toggleTheme } = useUiStore();
   const { currentTrack } = usePlayerStore();
 
+  const basePath = import.meta.env.BASE_URL.replace(/\/$/, ''); // Remove trailing slash
+
   const navItems = [
-    { icon: Home, label: 'Home', path: '/' },
-    { icon: Search, label: 'Search', path: '/search' },
-    { icon: Library, label: 'Library', path: '/library' },
+    { icon: Home, label: 'Home', path: `${basePath}/` },
+    { icon: Search, label: 'Search', path: `${basePath}/search` },
+    { icon: Library, label: 'Library', path: `${basePath}/library` },
   ];
 
   const isLinkActive = (path: string) => {
-    if (path === '/') {
-      return currentPath === '/' || currentPath === '/index.html';
+    if (path === `${basePath}/`) {
+      return currentPath === `${basePath}/` || currentPath === `${basePath}/index.html` || currentPath === '';
     }
     return currentPath.startsWith(path);
   };
