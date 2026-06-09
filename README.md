@@ -48,6 +48,28 @@ SONIVIO is a fast, lightweight, and visually premium music streaming portfolio a
 
 ---
 
+## 🏗️ System Architecture
+
+SONIVIO utilizes a decoupled, modern multi-tier architecture to deliver an engineered, secure music streaming experience:
+
+```mermaid
+graph TD
+    User([User Client]) 
+    --> React["React Components (Islands)"] 
+    --> Zustand["Zustand Global Stores"]
+    React --> API["API Service Layer (Axios/Fetch)"]
+    API --> Proxy["Secure Proxy Route (Astro Serverless Edge Endpoint)"]
+    Proxy --> YouTube["YouTube Data API v3"]
+```
+
+### Architectural Breakdown
+- **User Interface (React Components)**: Interactive elements (e.g., player, queue, sidebar) compile to modular client components, hydrated over pre-rendered Astro static HTML.
+- **Global State (Zustand Stores)**: Structured into independent store slices (`playerStore`, `queueStore`, `libraryStore`, `uiStore`) managing audio playback context, active playlists/queues, caching, and layouts.
+- **Service Layer (Axios/Fetch)**: Handles request construction, error states, and local cache checks before dispatching calls.
+- **Secure Serverless Proxy (Astro Endpoint)**: Intercepts queries on `/api/youtube` to inject private API credentials server-side, shielding Google Cloud developer keys from client-side browser exposure.
+
+---
+
 ## 📦 How to Run
 
 ### Prerequisites
