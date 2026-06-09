@@ -7,7 +7,7 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "deploy": "npx cross-env DEPLOY_PLATFORM=gh-pages astro build && gh-pages -d dist"
+    "deploy": "npx cross-env DEPLOY_PLATFORM=gh-pages astro build && gh-pages -d dist --dotfiles"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^13.6.1",
