@@ -26,6 +26,84 @@ const getRequest = async (params: Record<string, any>) => {
     throw new Error('API calls should only be made on the client.');
   }
   
+  const isGitHubPages = window.location.hostname.includes('github.io');
+  
+  if (isGitHubPages) {
+    // If hosted on GitHub Pages, fetch directly from YouTube Data API v3!
+    const API_KEY = import.meta.env.VITE_YOUTUBE_API_KEY;
+    if (!API_KEY) {
+      console.error('VITE_YOUTUBE_API_KEY is missing in client build.');
+      throw new Error('YouTube API Key is missing in client build.');
+    }
+    
+    const BASE_URL = 'https://www.googleapis.com/youtube/v3';
+    const action = params.action;
+    let fetchUrl = '';
+    const queryParams = new URLSearchParams();
+    queryParams.set('key', API_KEY);
+
+    if (action === 'search') {
+      fetchUrl = `${BASE_URL}/search`;
+      queryParams.set('part', 'snippet');
+      queryParams.set('q', params.q || '');
+      queryParams.set('type', params.type || 'video');
+      queryParams.set('maxResults', String(params.maxResults || '20'));
+      if (params.type === 'video') queryParams.set('videoCategoryId', '10');
+      if (params.regionCode) queryParams.set('regionCode', params.regionCode);
+      if (params.channelId) queryParams.set('channelId', params.channelId);
+      if (params.order) queryParams.set('order', params.order);
+    } else if (action === 'trending') {
+      fetchUrl = `${BASE_URL}/videos`;
+      queryParams.set('part', 'snippet,contentDetails,statistics');
+      queryParams.set('chart', 'mostPopular');
+      queryParams.set('videoCategoryId', '10');
+      queryParams.set('regionCode', params.regionCode || 'US');
+      queryParams.set('maxResults', String(params.maxResults || '20'));
+    } else if (action === 'video-details') {
+      fetchUrl = `${BASE_URL}/videos`;
+      queryParams.set('part', 'snippet,statistics,contentDetails');
+      queryParams.set('id', params.id || '');
+    } else if (action === 'channel-details') {
+      fetchUrl = `${BASE_URL}/channels`;
+      queryParams.set('part', 'snippet,statistics');
+      queryParams.set('id', params.id || '');
+    } else if (action === 'playlist-details') {
+      fetchUrl = `${BASE_URL}/playlists`;
+      queryParams.set('part', 'snippet,contentDetails');
+      queryParams.set('id', params.id || '');
+    } else if (action === 'playlist-items') {
+      fetchUrl = `${BASE_URL}/playlistItems`;
+      queryParams.set('part', 'snippet');
+      queryParams.set('playlistId', params.playlistId || '');
+      queryParams.set('maxResults', String(params.maxResults || '50'));
+    } else if (action === 'related') {
+      fetchUrl = `${BASE_URL}/search`;
+      queryParams.set('part', 'snippet');
+      queryParams.set('relatedToVideoId', params.relatedToVideoId || '');
+      queryParams.set('type', 'video');
+      queryParams.set('maxResults', String(params.maxResults || '6'));
+    }
+
+    const res = await fetch(`${fetchUrl}?${queryParams.toString()}`);
+    if (!res.ok) {
+      if (action === 'related' && res.status === 400) {
+        const fallbackParams = new URLSearchParams();
+        fallbackParams.set('key', API_KEY);
+        fallbackParams.set('part', 'snippet');
+        fallbackParams.set('q', params.videoTitle || 'trending music');
+        fallbackParams.set('type', 'video');
+        fallbackParams.set('videoCategoryId', '10');
+        fallbackParams.set('maxResults', String(params.maxResults || '6'));
+        const fallbackRes = await fetch(`${BASE_URL}/search?${fallbackParams.toString()}`);
+        if (fallbackRes.ok) {
+          return fallbackRes.json();
+        }
+      }
+      throw new Error(`Failed to fetch from YouTube API: ${res.statusText}`);
+    }
+    return res.json();
+  }
+
   const url = new URL(PROXY_URL, window.location.origin);
   Object.entries(params).forEach(([key, val]) => {
     if (val !== undefined && val !== null && val !== '') {

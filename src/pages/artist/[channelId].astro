@@ -2,6 +2,12 @@
 import Layout from '../../layouts/Layout.astro';
 import Artist from '../../react-pages/Artist';
 const { channelId } = Astro.params;
+
+export function getStaticPaths() {
+  return [
+    { params: { channelId: 'dummy' } }
+  ];
+}
 ---
 
 <Layout title="Artist Profile">
