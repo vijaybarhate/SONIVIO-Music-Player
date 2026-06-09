@@ -1,0 +1,8 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Library from '../react-pages/Library';
+---
+
+<Layout title="Your Library" description="Access your saved tracks, custom playlists, and recently played history on SONIVIO.">
+  <Library client:only="react" />
+</Layout>

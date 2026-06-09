@@ -1,13 +1,11 @@
-import axios from 'axios';
-import { Track } from '../types';
-import { usePlayerStore } from '../store/playerStore';
+import type { Track } from '../types';
+import { useLibraryStore } from '../store/libraryStore';
 
-const API_KEY = import.meta.env.VITE_YOUTUBE_API_KEY;
-const BASE_URL = 'https://www.googleapis.com/youtube/v3';
+const PROXY_URL = '/api/youtube';
 
 // Helper to handle API requests with Zustand caching
 const fetchWithCache = async <T>(cacheKey: string, fetcher: () => Promise<T>): Promise<T> => {
-  const store = usePlayerStore.getState();
+  const store = useLibraryStore.getState();
   const cached = store.getCache(cacheKey);
   if (cached) return cached as T;
 
@@ -17,27 +15,42 @@ const fetchWithCache = async <T>(cacheKey: string, fetcher: () => Promise<T>): P
     return data;
   } catch (error) {
     console.error(`API Error for ${cacheKey}:`, error);
-    // In case of error, if we have an expired cache entry, we might want to return it but Zustand logic currently returns null if expired.
-    // For now, throw the error so UI handles the error state.
     throw error;
   }
 };
 
+// Helper for HTTP requests using native fetch
+const getRequest = async (params: Record<string, any>) => {
+  if (typeof window === 'undefined') {
+    // During server-side rendering, fetch local proxy directly
+    throw new Error('API calls should only be made on the client.');
+  }
+  
+  const url = new URL(PROXY_URL, window.location.origin);
+  Object.entries(params).forEach(([key, val]) => {
+    if (val !== undefined && val !== null && val !== '') {
+      url.searchParams.set(key, String(val));
+    }
+  });
+
+  const res = await fetch(url.toString());
+  if (!res.ok) {
+    throw new Error(`Failed to fetch: ${res.statusText}`);
+  }
+  return res.json();
+};
+
 export const searchTracks = async (query: string, maxResults = 20, regionCode?: string): Promise<Track[]> => {
   return fetchWithCache(`search_${query}_${maxResults}_${regionCode || 'none'}`, async () => {
-    const response = await axios.get(`${BASE_URL}/search`, {
-      params: {
-        part: 'snippet',
-        maxResults,
-        q: query,
-        type: 'video',
-        videoCategoryId: '10', // Music
-        regionCode,
-        key: API_KEY,
-      },
+    const data = await getRequest({
+      action: 'search',
+      q: query,
+      type: 'video',
+      maxResults,
+      regionCode,
     });
 
-    return response.data.items.map((item: any) => ({
+    return data.items.map((item: any) => ({
       id: item.id.videoId,
       title: item.snippet.title,
       artist: item.snippet.channelTitle,
@@ -50,18 +63,13 @@ export const searchTracks = async (query: string, maxResults = 20, regionCode?: 
 export const getTrendingTracks = async (regionCode = 'US', maxResults = 20): Promise<Track[]> => {
   return fetchWithCache(`trending_${regionCode}_${maxResults}`, async () => {
     try {
-      const response = await axios.get(`${BASE_URL}/videos`, {
-        params: {
-          part: 'snippet,contentDetails,statistics',
-          chart: 'mostPopular',
-          regionCode,
-          videoCategoryId: '10',
-          maxResults,
-          key: API_KEY,
-        },
+      const data = await getRequest({
+        action: 'trending',
+        regionCode,
+        maxResults,
       });
 
-      return response.data.items.map((item: any) => ({
+      return data.items.map((item: any) => ({
         id: item.id,
         title: item.snippet.title,
         artist: item.snippet.channelTitle,
@@ -72,7 +80,6 @@ export const getTrendingTracks = async (regionCode = 'US', maxResults = 20): Pro
       }));
     } catch (error) {
       console.error(`Error fetching trending tracks for ${regionCode}:`, error);
-      // Fallback to search if chart is unavailable in the region
       return searchTracks(`trending music 2026 ${regionCode}`, maxResults, regionCode);
     }
   });
@@ -80,20 +87,16 @@ export const getTrendingTracks = async (regionCode = 'US', maxResults = 20): Pro
 
 export const searchArtists = async (query: string, maxResults = 5) => {
   return fetchWithCache(`artist_${query}_${maxResults}`, async () => {
-    const response = await axios.get(`${BASE_URL}/search`, {
-      params: {
-        part: 'snippet',
-        maxResults,
-        q: query,
-        type: 'channel',
-        key: API_KEY,
-      },
+    const data = await getRequest({
+      action: 'search',
+      q: query,
+      type: 'channel',
+      maxResults,
     });
 
-    // In a real app, you might map this to a specific Artist type
-    return response.data.items.map((item: any) => ({
+    return data.items.map((item: any) => ({
       id: item.id.channelId,
-      title: item.snippet.title, // Channel Name
+      title: item.snippet.title,
       thumbnail: item.snippet.thumbnails.high?.url || item.snippet.thumbnails.default?.url,
       description: item.snippet.description,
     }));
@@ -102,17 +105,14 @@ export const searchArtists = async (query: string, maxResults = 5) => {
 
 export const searchPlaylists = async (query: string, maxResults = 5) => {
   return fetchWithCache(`playlists_${query}_${maxResults}`, async () => {
-    const response = await axios.get(`${BASE_URL}/search`, {
-      params: {
-        part: 'snippet',
-        maxResults,
-        q: query,
-        type: 'playlist',
-        key: API_KEY,
-      },
+    const data = await getRequest({
+      action: 'search',
+      q: query,
+      type: 'playlist',
+      maxResults,
     });
 
-    return response.data.items.map((item: any) => ({
+    return data.items.map((item: any) => ({
       id: item.id.playlistId,
       title: item.snippet.title,
       artist: item.snippet.channelTitle,
@@ -121,20 +121,17 @@ export const searchPlaylists = async (query: string, maxResults = 5) => {
   });
 };
 
-export const getRelatedTracks = async (videoId: string, maxResults = 6): Promise<Track[]> => {
+export const getRelatedTracks = async (videoId: string, maxResults = 6, videoTitle?: string): Promise<Track[]> => {
   return fetchWithCache(`related_${videoId}_${maxResults}`, async () => {
-    const response = await axios.get(`${BASE_URL}/search`, {
-      params: {
-        part: 'snippet',
-        relatedToVideoId: videoId,
-        type: 'video',
-        maxResults,
-        key: API_KEY,
-      },
+    const data = await getRequest({
+      action: 'related',
+      relatedToVideoId: videoId,
+      videoTitle: videoTitle || 'music',
+      maxResults,
     });
 
-    return response.data.items.map((item: any) => ({
-      id: item.id.videoId,
+    return data.items.map((item: any) => ({
+      id: item.id.videoId || item.id,
       title: item.snippet.title,
       artist: item.snippet.channelTitle,
       thumbnail: item.snippet.thumbnails.high?.url || item.snippet.thumbnails.default?.url,
@@ -144,16 +141,13 @@ export const getRelatedTracks = async (videoId: string, maxResults = 6): Promise
 
 export const getTrackDetails = async (videoId: string): Promise<Track | null> => {
   return fetchWithCache(`details_${videoId}`, async () => {
-    const response = await axios.get(`${BASE_URL}/videos`, {
-      params: {
-        part: 'snippet,statistics,contentDetails',
-        id: videoId,
-        key: API_KEY,
-      },
+    const data = await getRequest({
+      action: 'video-details',
+      id: videoId,
     });
 
-    if (response.data.items.length === 0) return null;
-    const item = response.data.items[0];
+    if (data.items.length === 0) return null;
+    const item = data.items[0];
 
     return {
       id: item.id,
@@ -170,16 +164,13 @@ export const getTrackDetails = async (videoId: string): Promise<Track | null> =>
 
 export const getChannelDetails = async (channelId: string) => {
   return fetchWithCache(`channel_${channelId}`, async () => {
-    const response = await axios.get(`${BASE_URL}/channels`, {
-      params: {
-        part: 'snippet,statistics',
-        id: channelId,
-        key: API_KEY,
-      },
+    const data = await getRequest({
+      action: 'channel-details',
+      id: channelId,
     });
     
-    if (response.data.items.length === 0) return null;
-    const item = response.data.items[0];
+    if (data.items.length === 0) return null;
+    const item = data.items[0];
     
     return {
       id: item.id,
@@ -187,25 +178,22 @@ export const getChannelDetails = async (channelId: string) => {
       thumbnail: item.snippet.thumbnails.high?.url || item.snippet.thumbnails.default?.url,
       subscriberCount: item.statistics?.subscriberCount,
       videoCount: item.statistics?.videoCount,
-      bannerUrl: item.snippet.thumbnails.high?.url, // Normally banner is in brandingSettings, keeping it simple
+      bannerUrl: item.snippet.thumbnails.high?.url,
     };
   });
 };
 
 export const getChannelVideos = async (channelId: string, order: 'date' | 'viewCount', maxResults = 12): Promise<Track[]> => {
   return fetchWithCache(`channel_vids_${channelId}_${order}_${maxResults}`, async () => {
-    const response = await axios.get(`${BASE_URL}/search`, {
-      params: {
-        part: 'snippet',
-        channelId,
-        order,
-        maxResults,
-        type: 'video',
-        key: API_KEY,
-      },
+    const data = await getRequest({
+      action: 'search',
+      channelId,
+      order,
+      maxResults,
+      type: 'video',
     });
 
-    return response.data.items.map((item: any) => ({
+    return data.items.map((item: any) => ({
       id: item.id.videoId,
       title: item.snippet.title,
       artist: item.snippet.channelTitle,
@@ -217,32 +205,26 @@ export const getChannelVideos = async (channelId: string, order: 'date' | 'viewC
 
 export const getPlaylistDetails = async (playlistId: string) => {
   return fetchWithCache(`playlist_details_${playlistId}`, async () => {
-    const response = await axios.get(`${BASE_URL}/playlists`, {
-      params: {
-        part: 'snippet,contentDetails',
-        id: playlistId,
-        key: API_KEY,
-      },
+    const data = await getRequest({
+      action: 'playlist-details',
+      id: playlistId,
     });
     
-    if (response.data.items.length === 0) return null;
-    return response.data.items[0];
+    if (data.items.length === 0) return null;
+    return data.items[0];
   });
 };
 
 export const getPlaylistItems = async (playlistId: string, maxResults = 50): Promise<Track[]> => {
   return fetchWithCache(`playlist_items_${playlistId}_${maxResults}`, async () => {
-    const response = await axios.get(`${BASE_URL}/playlistItems`, {
-      params: {
-        part: 'snippet',
-        playlistId,
-        maxResults,
-        key: API_KEY,
-      },
+    const data = await getRequest({
+      action: 'playlist-items',
+      playlistId,
+      maxResults,
     });
 
-    return response.data.items
-      .filter((item: any) => item.snippet.resourceId.videoId)
+    return data.items
+      .filter((item: any) => item.snippet?.resourceId?.videoId)
       .map((item: any) => ({
         id: item.snippet.resourceId.videoId,
         title: item.snippet.title,
@@ -252,7 +234,6 @@ export const getPlaylistItems = async (playlistId: string, maxResults = 50): Pro
   });
 };
 
-// Kept for backward compatibility if used directly
 export const getIndianTrending = () => getTrendingTracks('IN', 15);
 export const getGlobalTrending = () => getTrendingTracks('US', 10);
 export const getNightDriveMix = () => searchTracks('late night drive music playlist', 6);

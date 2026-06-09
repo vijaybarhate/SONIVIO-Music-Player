@@ -1,0 +1,71 @@
+---
+import Sidebar from '../components/layout/Sidebar';
+import BottomNav from '../components/layout/BottomNav';
+import BottomPlayer from '../components/player/BottomPlayer';
+import HiddenYouTube from '../components/player/HiddenYouTube';
+import Toasts from '../components/common/Toasts';
+import { ClientRouter } from 'astro:transitions';
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const { title, description = 'SONIVIO v2 - Premium Music Streaming Platform' } = Astro.props;
+---
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="generator" content={Astro.generator} />
+    <meta name="description" content={description} />
+    
+    <!-- Typography: Google Fonts fallback (Inter and Roboto) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@400;500;600;700&family=JetBrains+Mono&display=swap" rel="stylesheet" />
+    
+    <title>{title} | SONIVIO</title>
+    <ClientRouter />
+    <script is:inline>
+      const applyTheme = () => {
+        const theme = localStorage.getItem('theme') || 
+          (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        if (theme === 'dark') {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+      };
+      applyTheme();
+      document.addEventListener('astro:after-swap', applyTheme);
+    </script>
+  </head>
+  <body class="flex h-screen bg-canvas-soft text-ink overflow-hidden antialiased selection:bg-ink selection:text-canvas">
+    <!-- Persistent YouTube player and notification system -->
+    <HiddenYouTube client:only="react" transition:persist="youtube" />
+    <Toasts client:only="react" transition:persist="toasts" />
+    
+    <!-- Persistent Sidebar (hidden on mobile, visible on md+) -->
+    <div class="hidden md:flex">
+      <Sidebar client:only="react" transition:persist="sidebar" />
+    </div>
+    
+    <!-- Main scrollable content view -->
+    <main class="flex-1 flex flex-col min-w-0 pb-[136px] md:pb-[88px] relative overflow-y-auto custom-scrollbar" id="main-content-scroll">
+      <div class="flex-1 p-4 md:p-8 max-w-7xl mx-auto w-full">
+        <slot />
+      </div>
+    </main>
+    
+    <!-- Mobile bottom navigation (visible only on mobile) -->
+    <BottomNav client:only="react" transition:persist="bottomnav" />
+
+    <!-- Persistent bottom player controls -->
+    <BottomPlayer client:only="react" transition:persist="player" />
+  </body>
+</html>

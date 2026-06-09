@@ -1,0 +1,8 @@
+---
+import Layout from '../layouts/Layout.astro';
+import About from '../react-pages/About';
+---
+
+<Layout title="About" description="Technical overview, framework components, and developer info for the SONIVIO platform.">
+  <About client:only="react" />
+</Layout>

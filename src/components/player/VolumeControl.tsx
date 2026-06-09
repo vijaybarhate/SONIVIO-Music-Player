@@ -9,16 +9,16 @@ const VolumeControl: React.FC = () => {
   const VolumeIcon = effectiveVol === 0 ? VolumeX : effectiveVol < 50 ? Volume1 : Volume2;
 
   return (
-    <div className="flex items-center gap-3 group w-32">
+    <div className="flex items-center gap-2 group w-28 select-none">
       <button
         onClick={toggleMute}
-        className="text-text-sub hover:text-brand transition-colors p-1"
-        title="MUTE_TOGGLE"
+        className="text-mute hover:text-ink transition-colors p-1 hover:bg-canvas-soft-2 rounded cursor-pointer"
+        title="Toggle mute"
       >
-        <VolumeIcon size={16} />
+        <VolumeIcon size={14} />
       </button>
 
-      <div className="relative flex-1 flex items-center h-4">
+      <div className="relative flex-1 flex items-center h-3 cursor-pointer">
         <input
           type="range"
           min="0"
@@ -27,14 +27,19 @@ const VolumeControl: React.FC = () => {
           onChange={(e) => setVolume(Number(e.target.value))}
           className="absolute w-full z-10 opacity-0 cursor-pointer h-full"
         />
-        <div className="absolute w-full h-[2px] bg-border-hard" />
+        {/* Track Background */}
+        <div className="absolute w-full h-[3px] bg-hairline rounded-full group-hover:h-1 transition-all duration-150" />
+        
+        {/* Progress Fill */}
         <div
-          className="absolute h-[2px] bg-brand pointer-events-none"
+          className="absolute h-[3px] bg-ink rounded-full pointer-events-none group-hover:h-1 transition-all duration-150"
           style={{ width: `${effectiveVol}%` }}
         />
+        
+        {/* Slider Handle */}
         <div
-          className="absolute w-1 h-3 bg-brand pointer-events-none -mt-[0.5px] border border-black"
-          style={{ left: `calc(${effectiveVol}% - 2px)` }}
+          className="absolute w-2 h-2 rounded-full bg-canvas border border-hairline-strong opacity-0 group-hover:opacity-100 pointer-events-none shadow-sm transition-opacity duration-150"
+          style={{ left: `calc(${effectiveVol}% - 4px)` }}
         />
       </div>
     </div>

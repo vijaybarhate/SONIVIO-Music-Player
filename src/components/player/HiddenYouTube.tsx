@@ -1,6 +1,8 @@
 import React, { useRef, useEffect } from 'react';
-import YouTube, { YouTubeProps } from 'react-youtube';
+import YouTube from 'react-youtube';
+import type { YouTubeProps } from 'react-youtube';
 import { usePlayerStore } from '../../store/playerStore';
+import { useQueueStore } from '../../store/queueStore';
 
 const HiddenYouTube: React.FC = () => {
   const { 
@@ -12,16 +14,16 @@ const HiddenYouTube: React.FC = () => {
     setDuration,
     next,
     lastPlayedPosition,
-    repeatMode,
-    queue,
-    queueIndex
+    repeatMode
   } = usePlayerStore();
+
+  const { queue, queueIndex } = useQueueStore();
   
   const playerRef = useRef<any>(null);
   const intervalRef = useRef<number | null>(null);
   const isInitialLoad = useRef(true);
 
-  // Preload next thumbnail
+  // Preload next track thumbnail
   useEffect(() => {
     const nextItem = queue[queueIndex + 1];
     if (nextItem) {

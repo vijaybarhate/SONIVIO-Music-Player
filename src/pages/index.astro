@@ -1,0 +1,8 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Home from '../react-pages/Home';
+---
+
+<Layout title="Discover Music" description="Discover trending music, global hits, releases, and curated mixes on SONIVIO.">
+  <Home client:only="react" />
+</Layout>

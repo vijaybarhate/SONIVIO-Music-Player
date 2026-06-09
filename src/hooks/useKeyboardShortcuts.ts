@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { usePlayerStore } from '../store/playerStore';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLibraryStore } from '../store/libraryStore';
+import { useUiStore } from '../store/uiStore';
 
 export const useKeyboardShortcuts = () => {
   const { 
@@ -11,20 +12,21 @@ export const useKeyboardShortcuts = () => {
     previous, 
     toggleMute, 
     currentTrack, 
-    toggleLike,
-    isExpanded,
-    setExpanded,
-    volume,
-    setVolume,
-    progress,
-    duration,
-    seek,
-    setKeyboardHelpOpen,
-    isKeyboardHelpOpen
+    volume, 
+    setVolume, 
+    progress, 
+    duration, 
+    seek
   } = usePlayerStore();
 
-  const navigate = useNavigate();
-  const location = useLocation();
+  const { toggleLike } = useLibraryStore();
+  
+  const {
+    isExpanded,
+    setExpanded,
+    isKeyboardHelpOpen,
+    setKeyboardHelpOpen
+  } = useUiStore();
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -61,14 +63,16 @@ export const useKeyboardShortcuts = () => {
           break;
         case 'Slash':
           e.preventDefault();
-          if (location.pathname !== '/search') {
-            navigate('/search');
+          if (typeof window !== 'undefined') {
+            if (window.location.pathname !== '/search') {
+              window.location.href = '/search';
+            }
+            // Focus search input after transition
+            setTimeout(() => {
+              const searchInput = document.querySelector('input[placeholder*="Search"]') as HTMLInputElement;
+              searchInput?.focus();
+            }, 50);
           }
-          // Delay to allow navigation/rendering before focusing
-          setTimeout(() => {
-            const searchInput = document.querySelector('input[placeholder*="listen"]') as HTMLInputElement;
-            searchInput?.focus();
-          }, 50);
           break;
         case 'Escape':
           if (isExpanded) {
@@ -100,7 +104,7 @@ export const useKeyboardShortcuts = () => {
           break;
       }
 
-      // Handle '?' which is shift + /
+      // Handle '?' (shift + /)
       if (e.key === '?') {
         e.preventDefault();
         setKeyboardHelpOpen(!isKeyboardHelpOpen);
@@ -111,7 +115,7 @@ export const useKeyboardShortcuts = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [
     isPlaying, play, pause, next, previous, toggleMute, currentTrack, 
-    toggleLike, isExpanded, setExpanded, navigate, location,
+    toggleLike, isExpanded, setExpanded,
     volume, setVolume, progress, duration, seek, setKeyboardHelpOpen, isKeyboardHelpOpen
   ]);
 };

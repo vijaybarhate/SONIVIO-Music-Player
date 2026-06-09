@@ -1,0 +1,9 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import PlaylistDetail from '../../react-pages/PlaylistDetail';
+const { id } = Astro.params;
+---
+
+<Layout title="Playlist Details">
+  <PlaylistDetail client:only="react" id={id} />
+</Layout>

@@ -32,3 +32,11 @@ dist-ssr
 
 # Vite
 *.timestamp-*
+
+# Astro & Cloudflare build/dev cache
+.astro
+.wrangler
+
+# Agent / Tool cache
+.agents
+.kilocode

@@ -1,16 +1,21 @@
 import React, { useEffect, useState } from 'react';
-import { ChevronDown, Share2, Heart, MoreHorizontal, ArrowUpRight } from 'lucide-react';
+import { ChevronDown, Share2, Heart, ArrowUpRight } from 'lucide-react';
 import { usePlayerStore } from '../../store/playerStore';
+import { useLibraryStore } from '../../store/libraryStore';
+import { useUiStore } from '../../store/uiStore';
 import PlayerControls from './PlayerControls';
 import ProgressBar from './ProgressBar';
 import VolumeControl from './VolumeControl';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getRelatedTracks, getTrackDetails } from '../../services/youtube';
-import { Track } from '../../types';
+import type { Track } from '../../types';
 import SongCard from '../cards/SongCard';
 
 const ExpandedPlayer: React.FC = () => {
-  const { currentTrack, isExpanded, setExpanded, likedSongs, toggleLike, isPlaying } = usePlayerStore();
+  const { currentTrack } = usePlayerStore();
+  const { likedSongs, toggleLike } = useLibraryStore();
+  const { isExpanded, setExpanded } = useUiStore();
+
   const isLiked = currentTrack ? likedSongs.some(t => t.id === currentTrack.id) : false;
 
   const [relatedTracks, setRelatedTracks] = useState<Track[]>([]);
@@ -18,7 +23,7 @@ const ExpandedPlayer: React.FC = () => {
 
   useEffect(() => {
     if (isExpanded && currentTrack) {
-      getRelatedTracks(currentTrack.id).then(setRelatedTracks).catch(console.error);
+      getRelatedTracks(currentTrack.id, 6, currentTrack.title).then(setRelatedTracks).catch(console.error);
       getTrackDetails(currentTrack.id).then(setTrackDetails).catch(console.error);
     }
   }, [isExpanded, currentTrack]);
@@ -36,161 +41,168 @@ const ExpandedPlayer: React.FC = () => {
   const formatDate = (dateString?: string) => {
     if (!dateString) return '';
     const date = new Date(dateString);
-    return `Released: ${date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   };
 
   const cleanTitle = (title: string) => {
     return title.replace(/\[.*?\]|\(.*?\)|\{.*?\}|\|.*/g, '').trim();
   };
 
+  const handleShare = () => {
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      navigator.clipboard.writeText(`https://youtube.com/watch?v=${currentTrack.id}`);
+      useUiStore.getState().showToast('Track link copied to clipboard', 'success');
+    }
+  };
+
   return (
     <AnimatePresence>
       {isExpanded && (
         <motion.div
-          initial={{ y: '100%', opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          exit={{ y: '100%', opacity: 0 }}
-          transition={{ duration: 0.5, ease: [0.25, 1, 0.5, 1] }}
-          className="fixed inset-0 z-[100] flex flex-col overflow-y-auto bg-bg custom-scrollbar"
+          initial={{ y: '100%' }}
+          animate={{ y: 0 }}
+          exit={{ y: '100%' }}
+          transition={{ duration: 0.35, ease: [0.25, 1, 0.5, 1] }}
+          className="fixed inset-0 z-[100] flex flex-col overflow-y-auto bg-canvas-soft custom-scrollbar select-none"
         >
-          {/* Blurred Background */}
+          {/* Faint ambient blurred background backdrop */}
           <div 
-            className="fixed inset-0 bg-cover bg-center scale-110 blur-3xl opacity-30 transform transition-transform duration-1000 pointer-events-none"
+            className="fixed inset-0 bg-cover bg-center scale-105 blur-3xl opacity-[0.06] pointer-events-none"
             style={{ backgroundImage: `url(${currentTrack.thumbnail})` }}
           />
-          <div className="fixed inset-0 bg-gradient-to-b from-bg/60 via-bg/80 to-bg pointer-events-none" />
 
-          {/* Header */}
-          <div className="relative z-10 p-6 md:p-8 flex items-center justify-between sticky top-0 bg-bg/50 backdrop-blur-md">
+          {/* Sticky Header */}
+          <div className="relative z-10 p-4 md:p-5 flex items-center justify-between sticky top-0 bg-canvas/80 backdrop-blur-md border-b border-hairline">
             <button
               onClick={() => setExpanded(false)}
-              className="p-3 rounded-full glass text-white hover:text-accent-start transition-colors"
+              className="p-1.5 rounded border border-hairline bg-canvas hover:bg-canvas-soft-2 text-mute hover:text-ink transition-colors cursor-pointer"
             >
-              <ChevronDown size={24} />
+              <ChevronDown size={18} />
             </button>
+            
             <div className="text-center flex flex-col">
-              <span className="text-[10px] font-sans font-semibold text-text-muted uppercase tracking-widest">Now Playing</span>
+              <span className="font-mono text-[9px] text-mute uppercase tracking-wider">Now Playing</span>
             </div>
+            
             <div className="flex items-center gap-2">
-              <button className="p-3 rounded-full text-white/70 hover:text-white hover:bg-white/10 transition-colors">
-                <Share2 size={20} />
-              </button>
-              <button className="p-3 rounded-full text-white/70 hover:text-white hover:bg-white/10 transition-colors hidden md:block">
-                <MoreHorizontal size={20} />
+              <button 
+                onClick={handleShare}
+                className="p-1.5 rounded border border-hairline bg-canvas hover:bg-canvas-soft-2 text-mute hover:text-ink transition-colors cursor-pointer"
+                title="Share track"
+              >
+                <Share2 size={14} />
               </button>
             </div>
           </div>
 
-          {/* Main Content */}
-          <div className="relative z-10 flex-1 flex flex-col items-center px-6 pt-4 pb-20 w-full max-w-5xl mx-auto">
-            {/* Artwork */}
-            <motion.div
-              className={`w-full max-w-[360px] aspect-square rounded-3xl overflow-hidden shadow-2xl mb-10 md:mb-12 ${isPlaying ? 'animate-[spin_20s_linear_infinite]' : ''}`}
-              style={{ animationPlayState: isPlaying ? 'running' : 'paused' }}
-            >
+          {/* Main Container */}
+          <div className="relative z-10 flex-1 flex flex-col items-center px-4 md:px-8 py-6 md:py-8 w-full max-w-4xl mx-auto">
+            {/* Album Cover Art */}
+            <div className="w-full max-w-[220px] sm:max-w-[320px] aspect-square rounded-lg overflow-hidden border border-hairline shadow-lg mb-6 md:mb-8 bg-canvas-soft-2">
               <img
                 src={currentTrack.thumbnail}
                 alt={currentTrack.title}
                 className="w-full h-full object-cover"
               />
-            </motion.div>
+            </div>
 
-            {/* Info */}
-            <div className="w-full flex items-center justify-between mb-8 max-w-2xl">
-              <div className="min-w-0 flex-1 pr-6 text-center md:text-left">
-                <h1 className="text-3xl md:text-5xl font-display italic tracking-tight text-white mb-2 truncate">
+            {/* Track Info Header */}
+            <div className="w-full flex items-center justify-between mb-6 md:mb-8 max-w-xl">
+              <div className="min-w-0 flex-1 pr-4 text-center sm:text-left">
+                <h1 className="text-xl md:text-2xl font-sans font-semibold text-ink leading-tight tracking-tight mb-1 truncate">
                   {cleanTitle(currentTrack.title)}
                 </h1>
-                <p className="text-lg font-sans text-text-muted truncate">
+                <p className="text-sm font-sans text-body truncate">
                   {currentTrack.artist}
                 </p>
               </div>
               
               <button
                 onClick={() => toggleLike(currentTrack)}
-                className={`p-4 rounded-full transition-colors hidden md:flex ${
-                  isLiked ? 'text-accent-start' : 'text-text-muted hover:text-white bg-white/5'
+                className={`p-2 rounded border transition-colors hidden sm:flex ${
+                  isLiked 
+                    ? 'text-link border-link bg-link-bg-soft/20' 
+                    : 'text-mute border-hairline hover:text-ink hover:bg-canvas-soft-2 bg-canvas shadow-sm'
                 }`}
               >
-                <Heart size={28} fill={isLiked ? "currentColor" : "none"} />
+                <Heart size={20} fill={isLiked ? "currentColor" : "none"} />
               </button>
             </div>
 
-            {/* Progress & Controls */}
-            <div className="w-full max-w-2xl mb-16">
-              <div className="mb-8">
+            {/* Controls panel */}
+            <div className="w-full max-w-xl mb-8 md:mb-12 border-b border-hairline pb-6 md:pb-8">
+              <div className="mb-4 md:mb-6">
                 <ProgressBar />
               </div>
 
-              <div className="flex flex-col items-center gap-8">
-                {/* Scaled up Player Controls */}
-                <div className="transform scale-125 md:scale-150 flex justify-center w-full">
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
+                <div className="flex-1 max-w-[150px] hidden sm:block">
+                  <VolumeControl />
+                </div>
+                
+                <div className="flex justify-center flex-1">
                   <PlayerControls />
                 </div>
 
-                <div className="w-full flex justify-between items-center pt-8 opacity-70 hover:opacity-100 transition-opacity">
+                <div className="flex items-center gap-2 sm:hidden">
                   <button
                     onClick={() => toggleLike(currentTrack)}
-                    className={`md:hidden p-3 rounded-full transition-colors ${
-                      isLiked ? 'text-accent-start' : 'text-text-muted'
+                    className={`p-2 rounded border transition-colors ${
+                      isLiked ? 'text-link border-link bg-link-bg-soft/20' : 'text-mute border-hairline'
                     }`}
                   >
-                    <Heart size={24} fill={isLiked ? "currentColor" : "none"} />
+                    <Heart size={16} fill={isLiked ? "currentColor" : "none"} />
                   </button>
-                  <div className="flex-1 max-w-[200px] hidden md:block">
-                    <VolumeControl />
-                  </div>
                 </div>
               </div>
             </div>
 
-            {/* Track Info Panel */}
-            <div className="w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-6 mb-16">
-              <div className="bg-surface/50 backdrop-blur-xl border border-stroke rounded-3xl p-6">
-                <h3 className="font-sans font-bold text-lg text-text-primary mb-4">About the Track</h3>
-                <div className="space-y-3">
-                  <div className="flex justify-between">
-                    <span className="text-text-muted font-sans text-sm">Artist</span>
-                    <span className="text-text-primary font-sans text-sm font-medium">{currentTrack.artist}</span>
+            {/* Details Panel */}
+            <div className="w-full max-w-3xl grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 mb-8 md:mb-12">
+              <div className="bg-canvas border border-hairline rounded-lg p-5 card-shadow-lvl3">
+                <h3 className="font-sans font-semibold text-xs text-ink mb-3 uppercase tracking-wider font-mono text-mute">Track Metadata</h3>
+                <div className="space-y-2.5">
+                  <div className="flex justify-between text-xs">
+                    <span className="text-mute">Artist</span>
+                    <span className="text-ink font-semibold">{currentTrack.artist}</span>
                   </div>
                   {trackDetails?.viewCount && (
-                    <div className="flex justify-between">
-                      <span className="text-text-muted font-sans text-sm">Plays</span>
-                      <span className="text-text-primary font-sans text-sm font-medium">{formatViewCount(trackDetails.viewCount)}</span>
+                    <div className="flex justify-between text-xs">
+                      <span className="text-mute">Plays</span>
+                      <span className="text-ink font-semibold">{formatViewCount(trackDetails.viewCount)}</span>
                     </div>
                   )}
                   {trackDetails?.publishedAt && (
-                    <div className="flex justify-between">
-                      <span className="text-text-muted font-sans text-sm">Release Date</span>
-                      <span className="text-text-primary font-sans text-sm font-medium">{formatDate(trackDetails.publishedAt)}</span>
+                    <div className="flex justify-between text-xs">
+                      <span className="text-mute">Release Date</span>
+                      <span className="text-ink font-semibold">{formatDate(trackDetails.publishedAt)}</span>
                     </div>
                   )}
                 </div>
               </div>
 
-              {/* Lyrics Placeholder */}
-              <div className="bg-surface/50 backdrop-blur-xl border border-stroke rounded-3xl p-6 flex flex-col items-center justify-center text-center group cursor-pointer hover:bg-surface transition-colors"
-                   onClick={() => window.open(`https://www.google.com/search?q=${encodeURIComponent(cleanTitle(currentTrack.title) + ' ' + currentTrack.artist + ' lyrics')}`, '_blank')}
+              {/* Lyrics card proxy */}
+              <div 
+                className="bg-canvas border border-hairline hover:border-hairline-strong rounded-lg p-5 flex flex-col justify-center text-left group cursor-pointer transition-colors card-shadow-lvl3 hover:card-shadow-lvl4"
+                onClick={() => window.open(`https://www.google.com/search?q=${encodeURIComponent(cleanTitle(currentTrack.title) + ' ' + currentTrack.artist + ' lyrics')}`, '_blank')}
               >
-                <div className="w-12 h-12 rounded-full bg-surface-elevated flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                  <ArrowUpRight className="text-accent-start" />
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="font-sans font-semibold text-xs text-ink uppercase tracking-wider font-mono text-mute">Lyrics search</h3>
+                  <ArrowUpRight size={14} className="text-mute group-hover:text-ink transition-colors" />
                 </div>
-                <h3 className="font-sans font-bold text-lg text-text-primary mb-2">Lyrics Search</h3>
-                <p className="font-sans text-sm text-text-muted px-4">
-                  Lyrics powered by Google Search. Click to find lyrics for {cleanTitle(currentTrack.title)}.
+                <p className="font-sans text-xs text-body leading-relaxed">
+                  Search for lyrics to "{cleanTitle(currentTrack.title)}" on Google.
                 </p>
               </div>
             </div>
 
-            {/* Related Tracks */}
+            {/* Related items list */}
             {relatedTracks.length > 0 && (
-              <div className="w-full max-w-6xl">
-                <h2 className="text-2xl font-sans font-bold mb-6 text-text-primary">Related Tracks</h2>
-                <div className="flex gap-4 overflow-x-auto pb-6 -mx-6 px-6 custom-scrollbar snap-x">
+              <div className="w-full max-w-3xl">
+                <h2 className="text-sm font-sans font-semibold text-ink mb-4 uppercase tracking-wider font-mono text-mute">Related Tracks</h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                   {relatedTracks.map((track) => (
-                    <div key={track.id} className="w-[200px] flex-shrink-0 snap-start">
-                      <SongCard track={track} context={relatedTracks} />
-                    </div>
+                    <SongCard key={track.id} track={track} context={relatedTracks} variant="horizontal" />
                   ))}
                 </div>
               </div>

@@ -14,12 +14,14 @@ const ProgressBar: React.FC = () => {
   const pct = duration > 0 ? ((isDragging ? localValue : progress) / duration) * 100 : 0;
 
   return (
-    <div className="flex items-center gap-3 w-full group">
-      <span className="text-[11px] text-text-muted font-sans tabular-nums w-10 text-right">
+    <div className="flex items-center gap-2.5 w-full group select-none">
+      {/* Elapsed Time */}
+      <span className="text-[10px] text-mute font-mono tabular-nums w-8 text-right">
         {formatTime(isDragging ? localValue : progress)}
       </span>
 
-      <div className="relative flex-1 flex items-center h-4 cursor-pointer">
+      {/* Slider Input */}
+      <div className="relative flex-1 flex items-center h-3 cursor-pointer">
         <input
           type="range"
           min="0"
@@ -36,20 +38,23 @@ const ProgressBar: React.FC = () => {
           className="absolute w-full z-10 opacity-0 cursor-pointer h-full"
         />
         {/* Track Background */}
-        <div className="absolute w-full h-1.5 bg-stroke rounded-full group-hover:h-2 transition-all duration-200" />
+        <div className="absolute w-full h-1 bg-hairline rounded-full group-hover:h-1.5 transition-all duration-150" />
+        
         {/* Progress Fill */}
         <div
-          className="absolute h-1.5 rounded-full accent-gradient pointer-events-none group-hover:h-2 transition-all duration-200"
+          className="absolute h-1 rounded-full bg-ink pointer-events-none group-hover:h-1.5 transition-all duration-150"
           style={{ width: `${pct}%` }}
         />
-        {/* Thumb Indicator */}
+        
+        {/* Handle Thumb */}
         <div
-          className="absolute w-3 h-3 rounded-full bg-white opacity-0 group-hover:opacity-100 pointer-events-none shadow-md transition-opacity duration-200"
-          style={{ left: `calc(${pct}% - 6px)` }}
+          className="absolute w-2.5 h-2.5 rounded-full bg-canvas border border-hairline-strong opacity-0 group-hover:opacity-100 pointer-events-none shadow-sm transition-opacity duration-150"
+          style={{ left: `calc(${pct}% - 5px)` }}
         />
       </div>
 
-      <span className="text-[11px] text-text-muted font-sans tabular-nums w-10">
+      {/* Duration Time */}
+      <span className="text-[10px] text-mute font-mono tabular-nums w-8">
         {formatTime(duration)}
       </span>
     </div>

@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Play, Heart, MoreVertical } from 'lucide-react';
-import { Track } from '../../types';
+import type { Track } from '../../types';
 import { usePlayerStore } from '../../store/playerStore';
+import { useLibraryStore } from '../../store/libraryStore';
 import { motion } from 'framer-motion';
 import ContextMenu from '../common/ContextMenu';
 
@@ -12,7 +13,9 @@ interface SongCardProps {
 }
 
 const SongCard: React.FC<SongCardProps> = ({ track, context, variant = 'vertical' }) => {
-  const { play, currentTrack, likedSongs, toggleLike, isPlaying } = usePlayerStore();
+  const { play, currentTrack, isPlaying } = usePlayerStore();
+  const { likedSongs, toggleLike } = useLibraryStore();
+  
   const [contextMenu, setContextMenu] = useState<{ isOpen: boolean; x: number; y: number }>({
     isOpen: false,
     x: 0,
@@ -37,7 +40,7 @@ const SongCard: React.FC<SongCardProps> = ({ track, context, variant = 'vertical
     setContextMenu({
       isOpen: true,
       x: rect.left,
-      y: rect.bottom + 10
+      y: rect.bottom + 6
     });
   };
 
@@ -46,50 +49,66 @@ const SongCard: React.FC<SongCardProps> = ({ track, context, variant = 'vertical
       <div
         onClick={() => play(track, context)}
         onContextMenu={handleContextMenu}
-        className={`flex items-center gap-4 p-3 rounded-xl cursor-pointer group transition-colors duration-200 ${isActive ? 'bg-surface-elevated' : 'hover:bg-surface-elevated'}`}
+        className={`flex items-center gap-3 p-2 rounded-md cursor-pointer group border transition-all duration-200 ${
+          isActive 
+            ? 'bg-canvas-soft-2 border-hairline-strong' 
+            : 'bg-canvas hover:bg-canvas-soft border-hairline hover:border-hairline-strong'
+        }`}
       >
-        <div className="relative w-12 h-12 rounded-md overflow-hidden flex-shrink-0">
+        <div className="relative w-10 h-10 rounded overflow-hidden flex-shrink-0 border border-hairline bg-canvas-soft-2">
           <img src={track.thumbnail} alt={track.title} className="w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
             {isActive && isPlaying ? (
-              <div className="flex gap-0.5 items-end h-3">
+              <div className="flex gap-0.5 items-end h-2.5">
                 {[1, 2, 3].map((i) => (
                   <motion.div
                     key={i}
-                    animate={{ height: [2, 8, 2] }}
+                    animate={{ height: [2, 7, 2] }}
                     transition={{ repeat: Infinity, duration: 0.6, delay: i * 0.12 }}
-                    className="w-0.5 bg-white"
+                    className="w-0.5 bg-canvas"
                   />
                 ))}
               </div>
             ) : (
-              <Play size={14} className="text-white ml-0.5" fill="currentColor" />
+              <Play size={10} className="text-canvas ml-0.5" fill="currentColor" />
             )}
           </div>
         </div>
+        
         <div className="min-w-0 flex-1">
-          <h4 className={`font-sans font-medium text-sm truncate ${isActive ? 'text-accent-start' : 'text-text-primary'}`}>
+          <h4 className={`font-sans font-medium text-xs truncate ${isActive ? 'text-link' : 'text-ink'}`}>
             {track.title}
           </h4>
-          <p className="font-sans text-xs text-text-muted truncate">
+          <p className="font-sans text-[10px] text-mute truncate mt-0.5">
             {track.artist}
           </p>
         </div>
+        
         <button
           onClick={(e) => {
             e.stopPropagation();
             toggleLike(track);
           }}
-          className={`p-2 transition-opacity ${isLiked ? 'text-accent-start opacity-100' : 'text-text-muted opacity-0 group-hover:opacity-100 hover:text-text-primary'}`}
+          className={`p-1.5 rounded hover:bg-canvas transition-colors ${
+            isLiked ? 'text-link opacity-100' : 'text-mute opacity-0 group-hover:opacity-100 hover:text-ink'
+          }`}
         >
-          <Heart size={16} fill={isLiked ? "currentColor" : "none"} />
+          <Heart size={13} fill={isLiked ? "currentColor" : "none"} />
         </button>
         <button
           onClick={handleMoreClick}
-          className="p-2 text-text-muted opacity-0 group-hover:opacity-100 hover:text-text-primary transition-opacity"
+          className="p-1.5 text-mute hover:text-ink hover:bg-canvas rounded opacity-0 group-hover:opacity-100 transition-opacity"
         >
-          <MoreVertical size={16} />
+          <MoreVertical size={13} />
         </button>
+
+        <ContextMenu 
+          isOpen={contextMenu.isOpen}
+          onClose={() => setContextMenu({ ...contextMenu, isOpen: false })}
+          x={contextMenu.x}
+          y={contextMenu.y}
+          track={track}
+        />
       </div>
     );
   }
@@ -97,57 +116,60 @@ const SongCard: React.FC<SongCardProps> = ({ track, context, variant = 'vertical
   return (
     <>
       <div
-        className="bg-surface rounded-2xl overflow-hidden group cursor-pointer hover:scale-[1.02] hover:-translate-y-1 transition-all duration-300 hover:shadow-glow flex flex-col h-full"
-        style={{ transitionTimingFunction: 'cubic-bezier(0.34, 1.56, 0.64, 1)' }}
+        className="bg-canvas border border-hairline hover:border-hairline-strong rounded-lg overflow-hidden group cursor-pointer transition-all duration-200 card-shadow-lvl3 hover:card-shadow-lvl4 flex flex-col h-full hover:-translate-y-0.5"
         onClick={() => play(track, context)}
         onContextMenu={handleContextMenu}
       >
-        <div className="p-3 pb-0">
-          <div className="relative aspect-square w-full rounded-xl overflow-hidden shadow-sm">
+        <div className="p-2 pb-0">
+          <div className="relative aspect-square w-full rounded-md overflow-hidden bg-canvas-soft-2 border border-hairline">
             <img
               src={track.thumbnail}
               alt={track.title}
-              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-101"
             />
             
-            <div className={`absolute inset-0 bg-black/40 flex items-center justify-center transition-opacity duration-300 ${isActive ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
-              <div className="w-12 h-12 rounded-full accent-gradient flex items-center justify-center shadow-lg transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
+            <div className={`absolute inset-0 bg-black/20 flex items-center justify-center transition-opacity duration-200 ${
+              isActive ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+            }`}>
+              <div className="w-10 h-10 rounded-full bg-ink text-canvas flex items-center justify-center shadow-md transform translate-y-1 group-hover:translate-y-0 transition-all duration-200">
                 {isActive && isPlaying ? (
-                  <div className="flex gap-0.5 items-end h-4">
+                  <div className="flex gap-0.5 items-end h-3">
                     {[1, 2, 3].map((i) => (
                       <motion.div
                         key={i}
-                        animate={{ height: [4, 12, 4] }}
+                        animate={{ height: [3, 9, 3] }}
                         transition={{ repeat: Infinity, duration: 0.6, delay: i * 0.12 }}
-                        className="w-1 bg-white"
+                        className="w-0.5 bg-canvas"
                       />
                     ))}
                   </div>
                 ) : (
-                  <Play size={20} fill="currentColor" className="text-white ml-1" />
+                  <Play size={16} fill="currentColor" className="ml-0.5" />
                 )}
               </div>
             </div>
 
-            <div className="absolute top-2 right-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            <div className="absolute top-1.5 right-1.5 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   toggleLike(track);
                 }}
-                className={`p-1.5 rounded-full glass ${isLiked ? 'text-accent-start' : 'text-white hover:text-accent-start'}`}
+                className={`p-1 rounded bg-canvas border border-hairline shadow-sm transition-colors ${
+                  isLiked ? 'text-link' : 'text-mute hover:text-ink'
+                }`}
               >
-                <Heart size={14} fill={isLiked ? "currentColor" : "none"} />
+                <Heart size={11} fill={isLiked ? "currentColor" : "none"} />
               </button>
             </div>
           </div>
         </div>
 
-        <div className="p-4 flex flex-col gap-1">
-          <h3 className={`font-sans font-medium text-sm truncate ${isActive ? 'text-accent-start' : 'text-text-primary'}`}>
+        <div className="p-2.5 flex flex-col gap-0.5 select-none">
+          <h3 className={`font-sans font-medium text-xs truncate ${isActive ? 'text-link' : 'text-ink'}`}>
             {track.title}
           </h3>
-          <p className="font-sans text-xs text-text-muted truncate">
+          <p className="font-sans text-[10px] text-mute truncate">
             {track.artist}
           </p>
         </div>
