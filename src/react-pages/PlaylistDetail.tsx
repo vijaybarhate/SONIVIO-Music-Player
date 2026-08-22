@@ -105,57 +105,62 @@ const PlaylistDetail: React.FC<PlaylistDetailProps> = ({ id }) => {
   if (error || !playlist) return <ErrorState title="Playlist Not Found" message="Could not load the requested playlist." actionLabel="Go Back" onAction={goBack} />;
 
   return (
-    <div 
+    <div
       className="pb-12 max-w-6xl mx-auto"
     >
-      <button 
+      <button
         onClick={goBack}
-        className="flex items-center gap-1.5 text-mute hover:text-ink mb-6 transition-colors font-sans text-xs select-none cursor-pointer"
+        className="flex items-center gap-1.5 text-mute hover:text-ink mb-6 transition-colors font-sans text-xs select-none cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-hairline-strong rounded-sm"
       >
-        <ArrowLeft size={14} /> 
+        <ArrowLeft size={14} />
         <span>Back</span>
       </button>
 
       {/* Playlist Metadata Header */}
-      <div className="flex flex-col md:flex-row gap-4 md:gap-8 items-start md:items-end mb-8 md:mb-10 select-none">
-        <div className="w-32 h-32 md:w-48 md:h-48 flex-shrink-0 rounded-lg overflow-hidden border border-hairline shadow-md bg-canvas-soft-2 flex items-center justify-center">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+        className="flex flex-col md:flex-row gap-4 md:gap-8 items-start md:items-end mb-8 md:mb-10 select-none"
+      >
+        <div className="w-32 h-32 md:w-48 md:h-48 flex-shrink-0 rounded-lg overflow-hidden border border-hairline modal-shadow-lvl5 bg-canvas-soft-2 flex items-center justify-center">
           {playlist.thumbnail ? (
-            <img src={playlist.thumbnail} alt={playlist.title} className="w-full h-full object-cover" />
+            <img src={playlist.thumbnail} alt="" className="w-full h-full object-cover" />
           ) : (
             <ListMusic size={40} className="text-mute" />
           )}
         </div>
-        
+
         <div className="flex-1">
-          <span className="font-mono text-[10px] font-semibold uppercase tracking-wider text-mute mb-2 block">Playlist</span>
-          <h1 className="text-xl md:text-4xl font-sans font-semibold text-ink leading-tight tracking-tight mb-2 md:mb-3 line-clamp-2">{playlist.title}</h1>
+          <span className="eyebrow mb-2 block">Playlist</span>
+          <h1 className="text-display-md md:text-display-xl text-ink leading-tight mb-2 md:mb-3 line-clamp-2">{playlist.title}</h1>
           {playlist.description && (
             <p className="font-sans text-xs text-body mb-4 line-clamp-2 max-w-2xl leading-relaxed">{playlist.description}</p>
           )}
-          <p className="font-sans text-xs text-mute font-medium mb-6">
-            {playlist.trackCount || tracks.length} tracks
+          <p className="font-mono text-[11px] text-mute tabular-nums mb-6">
+            {playlist.trackCount || tracks.length} TRACKS
           </p>
 
           <div className="flex items-center gap-3">
-            <button 
+            <button
               onClick={handlePlayAll}
               disabled={tracks.length === 0}
-              className="flex items-center gap-1.5 h-9 px-5 rounded-full bg-ink hover:bg-body text-canvas font-sans font-medium text-xs shadow-sm transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center gap-1.5 h-9 px-5 rounded-full bg-ink hover:bg-body text-canvas font-sans font-medium text-xs card-shadow-lvl3 transition-all hover:scale-[1.03] active:scale-95 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-link"
             >
-              <Play size={13} fill="currentColor" /> 
+              <Play size={13} fill="currentColor" />
               <span>Play</span>
             </button>
-            <button 
+            <button
               onClick={handleShufflePlay}
               disabled={tracks.length === 0}
               className="flex items-center gap-1.5 h-9 px-5 rounded-full bg-canvas border border-hairline hover:bg-canvas-soft text-body hover:text-ink font-sans font-medium text-xs shadow-sm transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <Shuffle size={13} /> 
+              <Shuffle size={13} />
               <span>Shuffle</span>
             </button>
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Tracks List */}
       <div>

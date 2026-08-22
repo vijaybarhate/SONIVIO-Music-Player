@@ -87,50 +87,57 @@ const Artist: React.FC<ArtistProps> = ({ channelId }) => {
     : { backgroundImage: `url(${artist.thumbnail})` };
 
   return (
-    <div 
+    <div
       className="pb-12 max-w-6xl mx-auto"
     >
-      {/* Artist Hero Banner (Vercel dark polarity band style) */}
-      <div className="relative h-[180px] md:h-[240px] rounded-lg overflow-hidden mb-8 md:mb-12 border border-hairline shadow-md bg-ink">
-        <div 
+      {/* Artist Hero Banner — polarity-flipped ink band */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+        className="relative h-[180px] md:h-[240px] rounded-lg overflow-hidden mb-8 md:mb-12 border border-hairline shadow-md bg-ink"
+      >
+        <div
           className={`absolute inset-0 bg-cover bg-center ${!artist.bannerUrl ? 'blur-3xl scale-110 opacity-30' : 'opacity-40'}`}
           style={bannerStyle}
         />
+        <div className="absolute inset-0 mesh-gradient-backdrop opacity-50" aria-hidden="true" />
         <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/40 to-transparent" />
-        
+
         <div className="absolute bottom-0 inset-x-0 p-4 md:p-8 flex flex-col sm:flex-row items-center sm:items-end justify-between gap-4 md:gap-6 text-center sm:text-left select-none">
           <div className="flex flex-col sm:flex-row items-center sm:items-end gap-5">
             <div className="w-20 h-20 md:w-24 md:h-24 rounded-full overflow-hidden border-2 border-hairline shadow-lg flex-shrink-0 bg-canvas">
-              <img src={artist.thumbnail} alt={artist.title} className="w-full h-full object-cover" />
+              <img src={artist.thumbnail} alt="" className="w-full h-full object-cover" />
             </div>
             <div>
-              <h1 className="text-2xl md:text-3xl font-sans font-semibold tracking-tight text-canvas mb-1">{artist.title}</h1>
-              <p className="font-sans text-xs text-mute font-medium">
-                {formatCount(artist.subscriberCount)} subscribers {artist.videoCount && `• ${formatCount(artist.videoCount)} videos`}
+              <p className="eyebrow mb-1.5 !text-canvas/60">Artist</p>
+              <h1 className="text-display-md md:text-display-lg text-canvas mb-1">{artist.title}</h1>
+              <p className="font-mono text-[11px] text-canvas/70 tabular-nums">
+                {formatCount(artist.subscriberCount)} subscribers {artist.videoCount && `· ${formatCount(artist.videoCount)} videos`}
               </p>
             </div>
           </div>
-          
-          <a 
+
+          <a
             href={`https://youtube.com/channel/${artist.id}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-1.5 h-8 px-4 rounded-full bg-canvas text-ink font-sans text-xs font-semibold hover:bg-canvas-soft transition-colors cursor-pointer w-fit"
+            className="flex items-center gap-1.5 h-8 px-4 rounded-full bg-canvas text-ink font-sans text-xs font-medium hover:bg-canvas-soft transition-all hover:scale-[1.03] active:scale-95 cursor-pointer w-fit focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-link"
           >
             <span>Visit Channel</span>
             <ExternalLink size={12} />
           </a>
         </div>
-      </div>
+      </motion.div>
 
       {/* Videos Section */}
       {videosLoading ? (
         <div className="space-y-8 md:space-y-12">
           <div>
-            <h2 className="text-lg font-sans font-semibold tracking-tight text-ink mb-6">Popular Videos.</h2>
+            <h2 className="text-display-sm text-ink mb-6">Popular Videos.</h2>
             <div className="flex gap-4 overflow-hidden">
               {[...Array(6)].map((_, i) => (
-                <div key={i} className="w-[180px] h-[240px] rounded-lg bg-canvas border border-hairline animate-pulse flex-shrink-0" />
+                <div key={i} className="w-[180px] h-[240px] rounded-lg bg-canvas border border-hairline shimmer-sweep flex-shrink-0" />
               ))}
             </div>
           </div>
@@ -141,7 +148,7 @@ const Artist: React.FC<ArtistProps> = ({ channelId }) => {
         <div className="space-y-8 md:space-y-12">
           {popularVideos.length > 0 && (
             <section>
-              <h2 className="text-lg font-sans font-semibold tracking-tight text-ink mb-4 md:mb-6">Popular Videos.</h2>
+              <h2 className="text-display-sm text-ink mb-4 md:mb-6">Popular Videos.</h2>
               <div className="flex gap-3 md:gap-4 overflow-x-auto pb-4 -mx-4 px-4 custom-scrollbar snap-x">
                 {popularVideos.map((track) => (
                   <div key={track.id} className="w-[140px] md:w-[180px] flex-shrink-0 snap-start">
@@ -154,7 +161,7 @@ const Artist: React.FC<ArtistProps> = ({ channelId }) => {
 
           {latestVideos.length > 0 && (
             <section>
-              <h2 className="text-lg font-sans font-semibold tracking-tight text-ink mb-4 md:mb-6">Latest Uploads.</h2>
+              <h2 className="text-display-sm text-ink mb-4 md:mb-6">Latest Uploads.</h2>
               <div className="flex gap-3 md:gap-4 overflow-x-auto pb-4 -mx-4 px-4 custom-scrollbar snap-x">
                 {latestVideos.map((track) => (
                   <div key={track.id} className="w-[140px] md:w-[180px] flex-shrink-0 snap-start">

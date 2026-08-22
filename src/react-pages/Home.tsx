@@ -4,15 +4,68 @@ import type { Track } from '../types';
 import SongCard from '../components/cards/SongCard';
 import { InlineError, ErrorState } from '../components/common/FeedbackStates';
 import { motion } from 'framer-motion';
-import { Play } from 'lucide-react';
+import { Play, ArrowUpRight } from 'lucide-react';
 import { usePlayerStore } from '../store/playerStore';
 
+const EASE = [0.22, 1, 0.36, 1] as const;
+
+/* ── Staggered word-reveal headline ─────────────────────────── */
+const RevealWords: React.FC<{ text: string; className?: string; delay?: number }> = ({
+  text,
+  className = '',
+  delay = 0,
+}) => (
+  <span className={`inline-flex flex-wrap gap-x-[0.28em] ${className}`} aria-label={text} role="text">
+    {text.split(' ').map((word, i) => (
+      <span key={i} className="overflow-hidden inline-flex pb-[0.08em] -mb-[0.08em]">
+        <motion.span
+          initial={{ y: '110%' }}
+          animate={{ y: 0 }}
+          transition={{ duration: 0.7, ease: EASE, delay: delay + i * 0.07 }}
+        >
+          {word}
+        </motion.span>
+      </span>
+    ))}
+  </span>
+);
+
+/* ── Genre marquee — editorial band between sections ────────── */
+const MARQUEE_ITEMS = ['Lo-fi', 'Synthwave', 'Hip-Hop', 'Indie', 'Classical', 'EDM', 'Jazz', 'Bollywood', 'Rock', 'Ambient'];
+
+const GenreMarquee: React.FC = () => (
+  <section
+    className="relative my-10 md:my-16 py-5 md:py-7 border-y border-hairline overflow-hidden select-none"
+    aria-hidden="true"
+  >
+    <div className="flex w-max animate-marquee will-change-transform">
+      {[0, 1].map((copy) => (
+        <div key={copy} className="flex items-center shrink-0">
+          {MARQUEE_ITEMS.map((genre) => (
+            <span key={`${copy}-${genre}`} className="flex items-center">
+              <span className="text-display-lg md:text-display-xl text-ink/90 px-6 md:px-10 whitespace-nowrap">
+                {genre}
+              </span>
+              <span className="w-1.5 h-1.5 rounded-full accent-gradient shrink-0" />
+            </span>
+          ))}
+        </div>
+      ))}
+    </div>
+    {/* Edge fades */}
+    <div className="absolute inset-y-0 left-0 w-16 md:w-32 bg-gradient-to-r from-canvas-soft to-transparent pointer-events-none" />
+    <div className="absolute inset-y-0 right-0 w-16 md:w-32 bg-gradient-to-l from-canvas-soft to-transparent pointer-events-none" />
+  </section>
+);
+
+/* ── Horizontal rail with edge fades + scroll reveal ────────── */
 interface SectionProps {
   title: string;
+  index: string;
   fetcher: () => Promise<Track[]>;
 }
 
-const HorizontalSection = React.memo(({ title, fetcher }: SectionProps) => {
+const HorizontalSection = React.memo(({ title, index, fetcher }: SectionProps) => {
   const [tracks, setTracks] = useState<Track[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -21,9 +74,8 @@ const HorizontalSection = React.memo(({ title, fetcher }: SectionProps) => {
     try {
       setLoading(true);
       setError(false);
-      const data = await fetcher();
-      setTracks(data);
-    } catch (e) {
+      setTracks(await fetcher());
+    } catch {
       setError(true);
     } finally {
       setLoading(false);
@@ -34,133 +86,130 @@ const HorizontalSection = React.memo(({ title, fetcher }: SectionProps) => {
     loadData();
   }, [loadData]);
 
-  if (loading) return (
-    <div className="mb-8 md:mb-12">
-      <h2 className="text-lg font-sans font-semibold tracking-tight text-ink mb-4 md:mb-6">{title}</h2>
-      <div className="flex gap-3 md:gap-4 overflow-hidden">
-        {[...Array(6)].map((_, i) => (
-          <div key={i} className="w-[140px] md:w-[180px] flex-shrink-0 animate-pulse bg-canvas-soft-2 border border-hairline rounded-lg h-[200px] md:h-[240px]" />
-        ))}
-      </div>
-    </div>
-  );
-
-  if (error) return (
-    <div className="mb-8 md:mb-12">
-      <h2 className="text-lg font-sans font-semibold tracking-tight text-ink mb-4 md:mb-6">{title}</h2>
-      <InlineError onRetry={loadData} />
-    </div>
-  );
-
-  if (!tracks.length) return null;
+  if (error && !tracks.length)
+    return (
+      <section className="mb-8 md:mb-12">
+        <SectionHeader title={title} index={index} />
+        <InlineError onRetry={loadData} />
+      </section>
+    );
 
   return (
     <section className="mb-8 md:mb-12">
-      <h2 className="text-lg font-sans font-semibold tracking-tight text-ink mb-4 md:mb-6">{title}</h2>
-      <div className="flex gap-3 md:gap-4 overflow-x-auto pb-4 -mx-4 px-4 custom-scrollbar snap-x">
-        {tracks.map((track, i) => (
-          <motion.div
-            key={track.id}
-            initial={{ opacity: 0, y: 10 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: Math.min(i * 0.05, 0.3), duration: 0.3 }}
-            className="w-[140px] md:w-[180px] flex-shrink-0 snap-start"
-          >
-            <SongCard track={track} context={tracks} />
-          </motion.div>
-        ))}
-      </div>
+      <SectionHeader title={title} index={index} />
+      {loading ? (
+        <div className="flex gap-3 md:gap-4 overflow-hidden">
+          {[...Array(6)].map((_, i) => (
+            <div
+              key={i}
+              className="w-[140px] md:w-[180px] flex-shrink-0 shimmer-sweep bg-canvas-soft-2 border border-hairline rounded-lg h-[200px] md:h-[240px]"
+            />
+          ))}
+        </div>
+      ) : (
+        tracks.length > 0 && (
+          <div className="relative group/rail">
+            <div className="flex gap-3 md:gap-4 overflow-x-auto pb-4 -mx-4 px-4 custom-scrollbar snap-x">
+              {tracks.map((track, i) => (
+                <motion.div
+                  key={track.id}
+                  initial={{ opacity: 0, y: 18 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: '-40px' }}
+                  transition={{ delay: Math.min(i * 0.05, 0.35), duration: 0.45, ease: EASE }}
+                  className="w-[140px] md:w-[180px] flex-shrink-0 snap-start"
+                >
+                  <SongCard track={track} context={tracks} />
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        )
+      )}
     </section>
   );
 });
 
+const SectionHeader: React.FC<{ title: string; index: string }> = ({ title, index }) => (
+  <div className="flex items-baseline gap-3 mb-4 md:mb-6">
+    <span className="font-mono text-[10px] text-mute tabular-nums">{index}</span>
+    <h2 className="text-display-sm text-ink tracking-tight">{title}</h2>
+    <span className="flex-1 h-px bg-hairline translate-y-[-4px]" aria-hidden="true" />
+  </div>
+);
+
+/* ── Mood mixes — ink cards with colored signal dots ────────── */
 const MoodMixes = React.memo(() => {
-  const moods = useMemo(() => [
-    { mood: "Chill Vibes", query: "chill lofi music 2026", color: "from-violet-soft to-cyan-soft" },
-    { mood: "Energy Boost", query: "high energy workout music 2026", color: "from-warning-soft to-error-soft" },
-    { mood: "Focus Mode", query: "deep focus study music lofi", color: "from-link-bg-soft to-cyan-soft" },
-    { mood: "Late Night", query: "late night drive synthwave playlist", color: "from-violet-soft to-error-soft" },
-    { mood: "Happy Beats", query: "happy feel good pop songs 2026", color: "from-warning-soft to-cyan-soft" },
-    { mood: "Acoustic", query: "acoustic guitar covers chill", color: "from-canvas-soft-2 to-hairline" }
-  ], []);
+  const moods = useMemo(
+    () => [
+      { mood: 'Chill Vibes', query: 'chill lofi music 2026', dot: '#7928ca' },
+      { mood: 'Energy Boost', query: 'high energy workout music 2026', dot: '#ff4d4d' },
+      { mood: 'Focus Mode', query: 'deep focus study music lofi', dot: '#007cf0' },
+      { mood: 'Late Night', query: 'late night drive synthwave playlist', dot: '#ff0080' },
+      { mood: 'Happy Beats', query: 'happy feel good pop songs 2026', dot: '#f9cb28' },
+      { mood: 'Acoustic', query: 'acoustic guitar covers chill', dot: '#00dfd8' },
+    ],
+    []
+  );
 
   const { play } = usePlayerStore();
-  const [loadingIndex, setLoadingIndex] = useState<number | null>(null);
 
-  const handleMoodClick = async (query: string, index: number) => {
+  const handleMoodClick = async (query: string) => {
     try {
-      setLoadingIndex(index);
       const tracks = await searchTracks(query, 20);
-      if (tracks.length > 0) {
-        play(tracks[0], tracks);
-      }
+      if (tracks.length > 0) play(tracks[0], tracks);
     } catch (error) {
-      console.error("Failed to load mood mix", error);
-    } finally {
-      setLoadingIndex(null);
+      console.error('Failed to load mood mix', error);
     }
   };
 
   return (
     <section className="mb-8 md:mb-12">
-      <h2 className="text-lg font-sans font-semibold tracking-tight text-ink mb-4 md:mb-6">Mood Mixes.</h2>
+      <SectionHeader title="Mood Mixes." index="03" />
       <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
         {moods.map((item, i) => (
-          <motion.div
+          <motion.button
             key={item.mood}
-            onClick={() => handleMoodClick(item.query, i)}
-            initial={{ opacity: 0, scale: 0.98 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            transition={{ delay: i * 0.03, duration: 0.3 }}
-            className={`h-24 md:h-28 rounded-lg p-5 cursor-pointer relative overflow-hidden bg-gradient-to-br ${item.color} border border-hairline flex flex-col justify-between group transition-all duration-200 card-shadow-lvl3 hover:card-shadow-lvl4 hover:-translate-y-0.5`}
+            onClick={() => handleMoodClick(item.query)}
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-40px' }}
+            whileHover={{ y: -3 }}
+            whileTap={{ scale: 0.98 }}
+            transition={{ delay: Math.min(i * 0.04, 0.25), duration: 0.4, ease: EASE }}
+            className="h-24 md:h-28 rounded-lg p-4 md:p-5 cursor-pointer relative overflow-hidden bg-canvas border border-hairline hover:border-hairline-strong flex flex-col justify-between group card-shadow-lvl3 hover:card-shadow-lvl4 transition-[border-color,box-shadow] duration-200 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-hairline-strong"
           >
-            <div className="absolute inset-0 bg-canvas/10 group-hover:bg-transparent transition-colors duration-200" />
-            <h3 className="relative z-10 font-sans font-semibold text-base text-ink tracking-tight">
+            {/* Ink wash sweep on hover */}
+            <div className="absolute inset-0 bg-ink translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out" />
+
+            <div className="relative z-10 flex items-center justify-between">
+              <span
+                className="w-2 h-2 rounded-full transition-transform duration-300 group-hover:scale-125"
+                style={{ backgroundColor: item.dot }}
+              />
+              <ArrowUpRight
+                size={14}
+                className="text-mute opacity-0 -translate-x-1 translate-y-1 group-hover:opacity-100 group-hover:translate-x-0 group-hover:translate-y-0 group-hover:text-canvas transition-all duration-200"
+              />
+            </div>
+
+            <h3 className="relative z-10 font-sans font-semibold text-base text-ink group-hover:text-canvas tracking-tight transition-colors duration-300 text-left">
               {item.mood}
             </h3>
-            
-            <div className="relative z-10 flex items-center justify-between text-xs text-mute font-mono">
-              <span>Mix Playlist</span>
-              <button className="w-8 h-8 rounded-full bg-ink text-canvas flex items-center justify-center opacity-0 group-hover:opacity-100 transform translate-y-1 group-hover:translate-y-0 transition-all duration-200 shadow-md">
-                {loadingIndex === i ? (
-                  <span className="w-3.5 h-3.5 border-2 border-canvas border-t-transparent rounded-full animate-spin" />
-                ) : (
-                  <Play size={12} fill="currentColor" className="ml-0.5" />
-                )}
-              </button>
-            </div>
-          </motion.div>
+          </motion.button>
         ))}
       </div>
     </section>
   );
 });
 
+/* ── Time-aware hero copy ───────────────────────────────────── */
 const getGreetingData = () => {
   const hour = new Date().getHours();
-  if (hour >= 5 && hour < 12) {
-    return {
-      greeting: "Good morning,",
-      tagline: "YOUR MORNING SOUNDTRACK."
-    };
-  } else if (hour >= 12 && hour < 17) {
-    return {
-      greeting: "Good afternoon,",
-      tagline: "YOUR AFTERNOON ROTATION."
-    };
-  } else if (hour >= 17 && hour < 22) {
-    return {
-      greeting: "Good evening,",
-      tagline: "YOUR EVENING SOUNDTRACK."
-    };
-  } else {
-    return {
-      greeting: "Late night grooves,",
-      tagline: "YOUR AFTER-HOURS ROTATION."
-    };
-  }
+  if (hour >= 5 && hour < 12) return { greeting: 'Good morning.', tagline: 'Your morning soundtrack' };
+  if (hour >= 12 && hour < 17) return { greeting: 'Good afternoon.', tagline: 'Your afternoon rotation' };
+  if (hour >= 17 && hour < 22) return { greeting: 'Good evening.', tagline: 'Your evening soundtrack' };
+  return { greeting: 'Late night grooves.', tagline: 'Your after-hours rotation' };
 };
 
 const Home: React.FC = () => {
@@ -175,10 +224,8 @@ const Home: React.FC = () => {
         setLoading(true);
         setError(false);
         const trendingData = await getTrendingTracks('US', 5);
-        if (trendingData.length > 0) {
-          setFeatured(trendingData[0]);
-        }
-      } catch (err) {
+        if (trendingData.length > 0) setFeatured(trendingData[0]);
+      } catch {
         setError(true);
       } finally {
         setLoading(false);
@@ -198,68 +245,90 @@ const Home: React.FC = () => {
 
   return (
     <div className="pb-12">
-      {/* Hero Header */}
-      <div className="mb-6 md:mb-8 select-none">
-        <span className="font-mono text-[10px] text-mute uppercase tracking-wider mb-1.5 block">
-          {greetingData.tagline}
-        </span>
-        <h1 className="text-2xl md:text-4xl font-sans font-semibold tracking-tight text-ink leading-tight">
-          {greetingData.greeting}{" "}
-          <span className="bg-gradient-to-r from-link via-violet to-highlight-pink bg-clip-text text-transparent">
-            Vijay.
-          </span>
-        </h1>
-      </div>
+      {/* ── Cinematic hero band ── */}
+      <header className="relative -mx-4 md:-mx-8 px-4 md:px-8 pt-10 pb-12 md:pt-16 md:pb-20 mb-8 md:mb-12 overflow-hidden select-none">
+        {/* Live drifting mesh + grain — hero scale only */}
+        <div className="absolute inset-0 mesh-gradient-live pointer-events-none" aria-hidden="true" />
+        <div className="grain-overlay" aria-hidden="true" />
+        <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-canvas-soft to-transparent pointer-events-none" aria-hidden="true" />
 
-      {/* Featured Banner with Mesh Gradient Backdrop */}
+        <div className="relative z-10 max-w-3xl">
+          <motion.p
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, ease: EASE }}
+            className="eyebrow mb-4"
+          >
+            {greetingData.tagline}
+          </motion.p>
+
+          <h1 className="text-display-xl md:text-[56px] md:leading-[60px] md:tracking-[-2.8px] text-ink leading-tight">
+            <RevealWords text={greetingData.greeting} delay={0.1} />{' '}
+            <span className="bg-gradient-to-r from-gradient-develop-start via-gradient-preview-end to-gradient-ship-end bg-clip-text text-transparent">
+              <RevealWords text="Press play." delay={0.24} />
+            </span>
+          </h1>
+
+          <motion.p
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.55, ease: EASE, delay: 0.5 }}
+            className="mt-5 max-w-md text-body-md text-body"
+          >
+            Millions of tracks, one cinematic player. Built for people who feel music.
+          </motion.p>
+        </div>
+      </header>
+
+      {/* ── Featured banner ── */}
       {loading ? (
-        <div className="mb-8 md:mb-12 h-[180px] md:h-[240px] bg-canvas-soft-2 border border-hairline animate-pulse rounded-lg" />
-      ) : featured ? (
-        <section 
-          className="mb-6 md:mb-10 relative rounded-lg border border-hairline bg-canvas p-5 md:p-8 overflow-hidden flex flex-col justify-between gap-4 md:gap-6 card-shadow-lvl4 cursor-pointer hover:border-hairline-strong transition-all duration-300 group"
-          onClick={() => play(featured)}
-        >
-          {/* Stark mesh gradient backdrop */}
-          <div className="absolute inset-0 mesh-gradient-backdrop opacity-70 pointer-events-none" />
-          
-          <div className="relative z-10 max-w-xl flex flex-col justify-between">
-            <div>
-              <span className="font-mono text-[10px] md:text-xs text-mute uppercase tracking-wider mb-1.5 md:mb-2 block">Featured Mix</span>
-              <h2 className="text-xl md:text-3xl font-sans font-semibold text-ink leading-tight tracking-tight mb-1.5 md:mb-2 group-hover:text-link transition-colors line-clamp-2">
-                {featured.title}
-              </h2>
-              <p className="text-body text-xs md:text-sm mt-1 mb-4 md:mb-6 truncate">{featured.artist}</p>
+        <div className="mb-6 md:mb-10 h-[180px] md:h-[240px] shimmer-sweep bg-canvas-soft-2 border border-hairline rounded-lg" />
+      ) : (
+        featured && (
+          <motion.section
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.55, ease: EASE }}
+            className="mb-6 md:mb-10 relative rounded-lg border border-hairline bg-canvas p-5 md:p-8 overflow-hidden flex flex-col sm:flex-row justify-between gap-4 md:gap-6 card-shadow-lvl4 cursor-pointer hover:border-hairline-strong transition-colors duration-300 group"
+            onClick={() => play(featured)}
+          >
+            <div className="absolute inset-0 mesh-gradient-backdrop opacity-60 dark:opacity-80 pointer-events-none" aria-hidden="true" />
+
+            <div className="relative z-10 max-w-xl flex flex-col justify-between gap-4 md:gap-6">
+              <div>
+                <span className="eyebrow mb-2 block">Featured Mix</span>
+                <h2 className="text-display-md md:text-display-lg text-ink leading-tight mb-1.5 line-clamp-2 group-hover:text-link transition-colors">
+                  {featured.title}
+                </h2>
+                <p className="text-body-sm text-body truncate">{featured.artist}</p>
+              </div>
+
+              <button
+                className="h-10 px-5 bg-ink text-canvas font-sans font-medium text-sm rounded-full flex items-center gap-2 card-shadow-lvl3 self-start transition-transform duration-200 group-hover:scale-[1.03] active:scale-95 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-link"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  play(featured);
+                }}
+              >
+                <Play size={14} fill="currentColor" />
+                <span>Play Now</span>
+              </button>
             </div>
-            
-            <button 
-              className="h-10 px-5 bg-ink text-canvas font-sans font-medium text-sm rounded-full flex items-center gap-2 shadow-md hover:bg-body transition-colors self-start"
-              onClick={(e) => {
-                e.stopPropagation();
-                play(featured);
-              }}
-            >
-              <Play size={14} fill="currentColor" />
-              <span>Play Now</span>
-            </button>
-          </div>
 
-          {/* Right: Album Thumbnail Artwork — hidden on very small mobile */}
-          <div className="relative z-10 flex-shrink-0 hidden sm:block w-28 h-28 md:w-36 md:h-36 rounded-md overflow-hidden border border-hairline shadow-md group-hover:scale-102 transition-transform duration-300 self-end">
-            <img 
-              src={featured.thumbnail} 
-              alt={featured.title} 
-              className="w-full h-full object-cover"
-              loading="eager"
-            />
-          </div>
-        </section>
-      ) : null}
+            <div className="relative z-10 flex-shrink-0 hidden sm:block w-28 h-28 md:w-36 md:h-36 rounded-md overflow-hidden border border-hairline shadow-md self-end transition-transform duration-500 ease-out group-hover:scale-[1.04] group-hover:-rotate-1">
+              <img src={featured.thumbnail} alt="" className="w-full h-full object-cover" loading="eager" />
+            </div>
+          </motion.section>
+        )
+      )}
 
-      <HorizontalSection title="Trending in India." fetcher={trendingIndiaFetcher} />
-      <HorizontalSection title="Top Global Hits." fetcher={topGlobalFetcher} />
+      <HorizontalSection title="Trending in India." index="01" fetcher={trendingIndiaFetcher} />
+      <HorizontalSection title="Top Global Hits." index="02" fetcher={topGlobalFetcher} />
+      <GenreMarquee />
       <MoodMixes />
-      <HorizontalSection title="New Releases." fetcher={newReleasesFetcher} />
-      <HorizontalSection title="Indian Charts." fetcher={indianChartsFetcher} />
+      <HorizontalSection title="New Releases." index="04" fetcher={newReleasesFetcher} />
+      <HorizontalSection title="Indian Charts." index="05" fetcher={indianChartsFetcher} />
     </div>
   );
 };

@@ -27,14 +27,14 @@ const Search: React.FC = () => {
   const { searchHistory, addToSearchHistory, clearSearchHistory } = useLibraryStore();
 
   const genres = [
-    { label: 'Lo-Fi Chill', gradient: 'from-violet-soft to-cyan-soft', query: 'lofi hip hop chill beats study' },
-    { label: 'Acoustic Cover', gradient: 'from-link-bg-soft to-cyan-soft', query: 'acoustic pop guitar covers' },
-    { label: 'Focus Study', gradient: 'from-canvas-soft-2 to-hairline-strong', query: 'deep focus concentration lofi study' },
-    { label: 'Energy Workout', gradient: 'from-warning-soft to-error-soft', query: 'gym workout music high energy electro' },
-    { label: 'Late Night drive', gradient: 'from-violet-soft to-error-soft', query: 'nightdrive synthwave tracks' },
-    { label: 'Bollywood Hits', gradient: 'from-warning-soft to-cyan-soft', query: 'latest bollywood viral music 2026' },
-    { label: 'Global Hits', gradient: 'from-link-bg-soft to-violet-soft', query: 'billboard hot 100 global hits' },
-    { label: 'Classic Rock', gradient: 'from-hairline to-hairline-strong', query: 'classic rock hits 70s 80s 90s' },
+    { label: 'Lo-Fi Chill', dot: '#7928ca', query: 'lofi hip hop chill beats study' },
+    { label: 'Acoustic Cover', dot: '#00dfd8', query: 'acoustic pop guitar covers' },
+    { label: 'Focus Study', dot: '#007cf0', query: 'deep focus concentration lofi study' },
+    { label: 'Energy Workout', dot: '#ff4d4d', query: 'gym workout music high energy electro' },
+    { label: 'Late Night Drive', dot: '#ff0080', query: 'nightdrive synthwave tracks' },
+    { label: 'Bollywood Hits', dot: '#f9cb28', query: 'latest bollywood viral music 2026' },
+    { label: 'Global Hits', dot: '#0070f3', query: 'billboard hot 100 global hits' },
+    { label: 'Classic Rock', dot: '#a1a1a1', query: 'classic rock hits 70s 80s 90s' },
   ];
 
   const performSearch = useCallback(async () => {
@@ -93,6 +93,12 @@ const Search: React.FC = () => {
 
   return (
     <div className="pb-12">
+      {/* Page header */}
+      <header className="mb-6 md:mb-8 select-none">
+        <p className="eyebrow mb-2">Discover</p>
+        <h1 className="text-display-lg text-ink">Find your next obsession.</h1>
+      </header>
+
       {/* Search Bar Container */}
       <div className="mb-6 md:mb-8 select-none">
         <div className={`relative max-w-3xl mx-auto rounded-md bg-canvas border transition-all duration-200 ${
@@ -181,22 +187,30 @@ const Search: React.FC = () => {
         </div>
       </div>
 
-      {/* Tab Selectors (Vercel tab-ghost style) */}
+      {/* Tab Selectors — sliding pill */}
       {query && (
         <div className="flex items-center justify-center gap-1.5 md:gap-2 mb-6 md:mb-8 select-none">
-          {(['songs', 'artists', 'playlists'] as SearchTab[]).map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`h-8 px-4 rounded-full font-sans text-xs transition-all duration-200 ${
-                activeTab === tab 
-                  ? 'bg-ink text-canvas font-medium shadow-sm' 
-                  : 'bg-canvas border border-hairline hover:bg-canvas-soft text-body hover:text-ink'
-              }`}
-            >
-              {tab.charAt(0).toUpperCase() + tab.slice(1)}
-            </button>
-          ))}
+          {(['songs', 'artists', 'playlists'] as SearchTab[]).map((tab) => {
+            const active = activeTab === tab;
+            return (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`relative h-8 px-4 rounded-full font-sans text-xs transition-colors duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-hairline-strong ${
+                  active ? 'text-canvas font-medium' : 'text-body hover:text-ink border border-hairline hover:bg-canvas-soft'
+                }`}
+              >
+                {active && (
+                  <motion.span
+                    layoutId="search-tab-pill"
+                    className="absolute inset-0 rounded-full bg-ink"
+                    transition={{ type: 'spring', stiffness: 420, damping: 32 }}
+                  />
+                )}
+                <span className="relative z-10">{tab.charAt(0).toUpperCase() + tab.slice(1)}</span>
+              </button>
+            );
+          })}
         </div>
       )}
 
@@ -276,22 +290,31 @@ const Search: React.FC = () => {
           ) : (
             // Genre Browse Panel (Inactive search states)
             <motion.div key="browse" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-6xl mx-auto">
-              <h2 className="text-lg font-sans font-semibold tracking-tight text-ink mb-4 md:mb-6">Browse Categories.</h2>
+              <h2 className="text-display-sm text-ink mb-4 md:mb-6">Browse Categories.</h2>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 md:gap-4">
                 {genres.map((genre, i) => (
-                  <motion.div
+                  <motion.button
                     key={genre.label}
                     onClick={() => setQuery(genre.query)}
-                    initial={{ opacity: 0, scale: 0.98 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: i * 0.02, duration: 0.25 }}
-                    className={`aspect-[16/10] rounded-lg p-5 cursor-pointer relative overflow-hidden bg-gradient-to-br ${genre.gradient} border border-hairline group card-shadow-lvl3 hover:card-shadow-lvl4 hover:-translate-y-0.5 transition-all duration-200`}
+                    initial={{ opacity: 0, y: 14 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.03, duration: 0.35 }}
+                    whileHover={{ y: -3 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="aspect-[16/10] rounded-lg p-4 md:p-5 cursor-pointer relative overflow-hidden bg-canvas border border-hairline hover:border-hairline-strong group card-shadow-lvl3 hover:card-shadow-lvl4 transition-[border-color,box-shadow] duration-200 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-hairline-strong"
                   >
-                    <div className="absolute inset-0 bg-canvas/10 group-hover:bg-transparent transition-colors duration-200" />
-                    <h3 className="relative z-10 font-sans font-semibold text-base text-ink tracking-tight">
-                      {genre.label}
-                    </h3>
-                  </motion.div>
+                    {/* Ink wash sweep on hover */}
+                    <div className="absolute inset-0 bg-ink translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out" />
+                    <div className="relative z-10 flex flex-col justify-between h-full items-start">
+                      <span
+                        className="w-2 h-2 rounded-full transition-transform duration-300 group-hover:scale-125"
+                        style={{ backgroundColor: genre.dot }}
+                      />
+                      <h3 className="font-sans font-semibold text-sm md:text-base text-ink group-hover:text-canvas tracking-tight transition-colors duration-300 text-left">
+                        {genre.label}
+                      </h3>
+                    </div>
+                  </motion.button>
                 ))}
               </div>
             </motion.div>

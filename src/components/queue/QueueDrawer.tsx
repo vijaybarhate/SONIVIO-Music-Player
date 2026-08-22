@@ -4,6 +4,7 @@ import { usePlayerStore } from '../../store/playerStore';
 import { useQueueStore } from '../../store/queueStore';
 import { useUiStore } from '../../store/uiStore';
 import { motion, AnimatePresence } from 'framer-motion';
+import Equalizer from '../common/Equalizer';
 
 interface QueueDrawerProps {
   isOpen: boolean;
@@ -37,7 +38,7 @@ const QueueDrawer: React.FC<QueueDrawerProps> = ({ isOpen, onClose }) => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-ink/15 backdrop-blur-xs z-[60]"
+            className="fixed inset-0 bg-ink/40 z-[60]"
           />
           
           {/* Drawer Sidebar */}
@@ -51,8 +52,10 @@ const QueueDrawer: React.FC<QueueDrawerProps> = ({ isOpen, onClose }) => {
             {/* Header */}
             <div className="p-4 border-b border-hairline flex items-center justify-between bg-canvas-soft-2">
               <div>
-                <h2 className="text-sm font-sans font-semibold text-ink">Up Next.</h2>
-                <p className="text-[10px] font-mono text-mute mt-0.5">{queue.length} tracks</p>
+                <h2 className="text-sm font-sans font-semibold text-ink tracking-tight">Up Next.</h2>
+                <p className="text-[10px] font-mono text-mute mt-0.5 tabular-nums">
+                  {queue.length} TRACK{queue.length === 1 ? '' : 'S'}
+                </p>
               </div>
               <div className="flex items-center gap-1.5">
                 <button
@@ -101,24 +104,29 @@ const QueueDrawer: React.FC<QueueDrawerProps> = ({ isOpen, onClose }) => {
                         }
                       `}
                     >
-                      {/* Sort Controls (Reordering) */}
-                      <div className="flex flex-col items-center opacity-0 group-hover:opacity-100 transition-opacity w-5">
-                        <button 
-                          onClick={(e) => { e.stopPropagation(); if (index > 0) reorderQueue(index, index - 1); }}
-                          disabled={index === 0}
-                          className="text-mute hover:text-ink p-0.5 disabled:opacity-25"
-                          title="Move up"
-                        >
-                          <ArrowUp size={11} />
-                        </button>
-                        <button 
-                          onClick={(e) => { e.stopPropagation(); if (index < queue.length - 1) reorderQueue(index, index + 1); }}
-                          disabled={index === queue.length - 1}
-                          className="text-mute hover:text-ink p-0.5 disabled:opacity-25"
-                          title="Move down"
-                        >
-                          <ArrowDown size={11} />
-                        </button>
+                      {/* Index / Sort Controls */}
+                      <div className="flex items-center justify-center w-5">
+                        <span className="font-mono text-[9px] text-mute tabular-nums group-hover:hidden">
+                          {String(index + 1).padStart(2, '0')}
+                        </span>
+                        <div className="hidden group-hover:flex flex-col items-center">
+                          <button
+                            onClick={(e) => { e.stopPropagation(); if (index > 0) reorderQueue(index, index - 1); }}
+                            disabled={index === 0}
+                            className="text-mute hover:text-ink p-0.5 disabled:opacity-25 cursor-pointer"
+                            title="Move up"
+                          >
+                            <ArrowUp size={11} />
+                          </button>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); if (index < queue.length - 1) reorderQueue(index, index + 1); }}
+                            disabled={index === queue.length - 1}
+                            className="text-mute hover:text-ink p-0.5 disabled:opacity-25 cursor-pointer"
+                            title="Move down"
+                          >
+                            <ArrowDown size={11} />
+                          </button>
+                        </div>
                       </div>
 
                       {/* Thumbnail Art */}
@@ -132,17 +140,8 @@ const QueueDrawer: React.FC<QueueDrawerProps> = ({ isOpen, onClose }) => {
                           className={`w-full h-full object-cover ${isActive ? '' : 'opacity-90 group-hover:opacity-100'}`}
                         />
                         {isActive && (
-                          <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
-                            <div className="flex gap-0.5 items-end h-2.5">
-                              {[1, 2, 3].map((i) => (
-                                <motion.div
-                                  key={i}
-                                  animate={{ height: [2, 7, 2] }}
-                                  transition={{ repeat: Infinity, duration: 0.6, delay: i * 0.12 }}
-                                  className="w-0.5 bg-canvas"
-                                />
-                              ))}
-                            </div>
+                          <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+                            <Equalizer bars={3} className="h-2.5 text-canvas" />
                           </div>
                         )}
                       </div>

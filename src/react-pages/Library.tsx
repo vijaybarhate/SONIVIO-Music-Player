@@ -106,16 +106,17 @@ const Library: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 md:gap-6 mb-6 md:mb-8 select-none">
         <div>
-        <h1 className="text-2xl md:text-4xl font-sans font-semibold tracking-tight text-ink">
+          <p className="eyebrow mb-2">Collection</p>
+          <h1 className="text-display-lg text-ink">
             Your Library.
           </h1>
-          <p className="text-body font-sans text-sm mt-1">All your saved music and history in one place.</p>
+          <p className="text-body-sm font-sans text-body mt-1">All your saved music and history in one place.</p>
         </div>
-        
+
         {activeTab === 'playlists' && (
-          <button 
+          <button
             onClick={() => setIsCreateModalOpen(true)}
-            className="flex items-center gap-2 h-9 px-4 rounded-md bg-ink hover:bg-body text-canvas font-sans font-medium text-xs shadow-sm transition-colors cursor-pointer"
+            className="flex items-center gap-2 h-9 px-4 rounded-full bg-ink hover:bg-body text-canvas font-sans font-medium text-xs card-shadow-lvl3 transition-all hover:scale-[1.03] active:scale-95 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-link"
           >
             <Plus size={14} />
             <span>Create Playlist</span>
@@ -123,26 +124,34 @@ const Library: React.FC = () => {
         )}
       </div>
 
-      {/* Tabs Menu (Vercel-inspired tab-ghost style) */}
+      {/* Tabs — sliding pill */}
       <div className="flex items-center gap-1.5 md:gap-2 mb-6 md:mb-8 pb-3 border-b border-hairline overflow-x-auto custom-scrollbar select-none">
         {[
           { id: 'favorites', label: 'Favorites', icon: Heart },
           { id: 'playlists', label: 'Playlists', icon: ListMusic },
           { id: 'history', label: 'History', icon: History }
-        ].map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => handleTabChange(tab.id as LibraryTab)}
-            className={`flex items-center gap-2 h-8 px-4 rounded-full font-sans text-xs transition-all duration-200 flex-shrink-0 ${
-              activeTab === tab.id 
-                ? 'bg-ink text-canvas font-medium shadow-sm' 
-                : 'bg-canvas border border-hairline hover:bg-canvas-soft text-body hover:text-ink'
-            }`}
-          >
-            <tab.icon size={13} />
-            <span>{tab.label}</span>
-          </button>
-        ))}
+        ].map((tab) => {
+          const active = activeTab === tab.id;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => handleTabChange(tab.id as LibraryTab)}
+              className={`relative flex items-center gap-2 h-8 px-4 rounded-full font-sans text-xs transition-colors duration-200 flex-shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-hairline-strong ${
+                active ? 'text-canvas font-medium' : 'text-body hover:text-ink border border-hairline hover:bg-canvas-soft'
+              }`}
+            >
+              {active && (
+                <motion.span
+                  layoutId="library-tab-pill"
+                  className="absolute inset-0 rounded-full bg-ink"
+                  transition={{ type: 'spring', stiffness: 420, damping: 32 }}
+                />
+              )}
+              <tab.icon size={13} className="relative z-10" />
+              <span className="relative z-10">{tab.label}</span>
+            </button>
+          );
+        })}
       </div>
 
       {/* Tab Panels */}

@@ -1,5 +1,6 @@
 import React from 'react';
 import { AlertTriangle, Inbox } from 'lucide-react';
+import Equalizer from './Equalizer';
 
 interface FeedbackProps {
   title?: string;
@@ -9,15 +10,15 @@ interface FeedbackProps {
   icon?: React.ReactNode;
 }
 
-export const LoadingState: React.FC<FeedbackProps> = ({ 
-  title = "Loading…", 
-  message = "Please wait while we fetch your content." 
+export const LoadingState: React.FC<FeedbackProps> = ({
+  title = "Loading…",
+  message = "Please wait while we fetch your content."
 }) => {
   return (
     <div className="flex flex-col items-center justify-center py-20 text-center gap-4 select-none">
-      <div className="w-8 h-8 rounded-full border-2 border-hairline border-t-ink animate-spin" />
+      <Equalizer bars={5} className="h-7 text-ink" barClassName="w-[3px] bg-current" />
       <div className="space-y-1">
-        <h3 className="font-sans font-semibold text-sm text-ink">{title}</h3>
+        <h3 className="font-sans font-medium text-sm text-ink">{title}</h3>
         <p className="font-sans text-xs text-mute">{message}</p>
       </div>
     </div>
@@ -79,11 +80,11 @@ export const ErrorState: React.FC<FeedbackProps> = ({
 export const SkeletonLoader: React.FC = () => (
   <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
     {[...Array(10)].map((_, i) => (
-      <div key={i} className="rounded-lg overflow-hidden animate-pulse border border-hairline bg-canvas">
-        <div className="aspect-square w-full bg-canvas-soft-2 border-b border-hairline" />
-        <div className="p-3">
-          <div className="h-3 bg-canvas-soft-2 rounded w-3/4 mb-2" />
-          <div className="h-2 bg-canvas-soft-2 rounded w-1/2" />
+      <div key={i} className="rounded-lg overflow-hidden border border-hairline bg-canvas">
+        <div className="aspect-square w-full bg-canvas-soft-2 border-b border-hairline shimmer-sweep" />
+        <div className="p-3 space-y-2">
+          <div className="h-3 bg-canvas-soft-2 rounded w-3/4 shimmer-sweep" />
+          <div className="h-2 bg-canvas-soft-2 rounded w-1/2 shimmer-sweep" />
         </div>
       </div>
     ))}

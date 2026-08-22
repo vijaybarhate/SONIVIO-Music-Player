@@ -5,28 +5,41 @@ import { formatTime } from '../../utils/formatTime';
 const ProgressBar: React.FC = () => {
   const { progress, duration, seek } = usePlayerStore();
   const [isDragging, setIsDragging] = useState(false);
+  const [isHovering, setIsHovering] = useState(false);
   const [localValue, setLocalValue] = useState(progress);
 
   useEffect(() => {
     if (!isDragging) setLocalValue(progress);
   }, [progress, isDragging]);
 
-  const pct = duration > 0 ? ((isDragging ? localValue : progress) / duration) * 100 : 0;
+  const value = isDragging ? localValue : progress;
+  const pct = duration > 0 ? (value / duration) * 100 : 0;
+  const showThumb = isDragging || isHovering;
 
   return (
     <div className="flex items-center gap-2.5 w-full group select-none">
-      {/* Elapsed Time */}
       <span className="text-[10px] text-mute font-mono tabular-nums w-8 text-right">
-        {formatTime(isDragging ? localValue : progress)}
+        {formatTime(value)}
       </span>
 
-      {/* Slider Input */}
-      <div className="relative flex-1 flex items-center h-3 cursor-pointer">
+      <div className="relative flex-1 flex items-center h-4 cursor-pointer">
+        {/* Scrub time tooltip */}
+        {showThumb && duration > 0 && (
+          <div
+            className="absolute -top-6 px-1.5 py-0.5 rounded-sm bg-ink text-canvas text-[9px] font-mono tabular-nums pointer-events-none -translate-x-1/2 whitespace-nowrap z-20"
+            style={{ left: `${pct}%` }}
+          >
+            {formatTime(value)}
+          </div>
+        )}
+
         <input
           type="range"
           min="0"
           max={duration || 100}
-          value={isDragging ? localValue : progress}
+          step="0.1"
+          value={value}
+          aria-label="Seek"
           onInput={(e) => {
             setIsDragging(true);
             setLocalValue(Number(e.currentTarget.value));
@@ -35,28 +48,34 @@ const ProgressBar: React.FC = () => {
             seek(Number(e.currentTarget.value));
             setIsDragging(false);
           }}
-          className="absolute w-full z-10 opacity-0 cursor-pointer h-full"
+          onMouseEnter={() => setIsHovering(true)}
+          onMouseLeave={() => setIsHovering(false)}
+          onKeyDown={() => setIsHovering(false)}
+          className="absolute w-full z-10 opacity-0 cursor-pointer h-full focus-visible:outline-none"
         />
-        {/* Track Background */}
+
+        {/* Track */}
         <div className="absolute w-full h-1 bg-hairline rounded-full group-hover:h-1.5 transition-all duration-150" />
-        
-        {/* Progress Fill */}
+
+        {/* Fill — gradient ink → link at the leading edge */}
         <div
-          className="absolute h-1 rounded-full bg-ink pointer-events-none group-hover:h-1.5 transition-all duration-150"
-          style={{ width: `${pct}%` }}
+          className="absolute h-1 rounded-full pointer-events-none group-hover:h-1.5 transition-all duration-150"
+          style={{
+            width: `${pct}%`,
+            background: 'linear-gradient(90deg, var(--ink) 82%, var(--color-link) 100%)',
+          }}
         />
-        
-        {/* Handle Thumb */}
+
+        {/* Thumb — glow while engaged */}
         <div
-          className="absolute w-2.5 h-2.5 rounded-full bg-canvas border border-hairline-strong opacity-0 group-hover:opacity-100 pointer-events-none shadow-sm transition-opacity duration-150"
-          style={{ left: `calc(${pct}% - 5px)` }}
+          className={`absolute w-3 h-3 rounded-full bg-canvas border border-hairline-strong pointer-events-none transition-all duration-150 ${
+            showThumb ? 'opacity-100 scale-110 shadow-[0_0_0_4px_color-mix(in_srgb,var(--color-link)_18%,transparent)]' : 'opacity-0 scale-90'
+          }`}
+          style={{ left: `calc(${pct}% - 6px)` }}
         />
       </div>
 
-      {/* Duration Time */}
-      <span className="text-[10px] text-mute font-mono tabular-nums w-8">
-        {formatTime(duration)}
-      </span>
+      <span className="text-[10px] text-mute font-mono tabular-nums w-8">{formatTime(duration)}</span>
     </div>
   );
 };

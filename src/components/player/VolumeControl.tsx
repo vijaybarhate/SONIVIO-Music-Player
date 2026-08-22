@@ -1,5 +1,6 @@
 import React from 'react';
 import { Volume2, VolumeX, Volume1 } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { usePlayerStore } from '../../store/playerStore';
 
 const VolumeControl: React.FC = () => {
@@ -10,13 +11,15 @@ const VolumeControl: React.FC = () => {
 
   return (
     <div className="flex items-center gap-2 group w-28 select-none">
-      <button
+      <motion.button
+        whileTap={{ scale: 0.85 }}
         onClick={toggleMute}
-        className="text-mute hover:text-ink transition-colors p-1 hover:bg-canvas-soft-2 rounded cursor-pointer"
+        aria-label={isMuted ? 'Unmute' : 'Mute'}
         title="Toggle mute"
+        className="text-mute hover:text-ink transition-colors p-1 hover:bg-canvas-soft-2 rounded cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-hairline-strong"
       >
         <VolumeIcon size={14} />
-      </button>
+      </motion.button>
 
       <div className="relative flex-1 flex items-center h-3 cursor-pointer">
         <input
@@ -25,21 +28,19 @@ const VolumeControl: React.FC = () => {
           max="100"
           value={effectiveVol}
           onChange={(e) => setVolume(Number(e.target.value))}
-          className="absolute w-full z-10 opacity-0 cursor-pointer h-full"
+          aria-label="Volume"
+          className="absolute w-full z-10 opacity-0 cursor-pointer h-full focus-visible:outline-none"
         />
-        {/* Track Background */}
         <div className="absolute w-full h-[3px] bg-hairline rounded-full group-hover:h-1 transition-all duration-150" />
-        
-        {/* Progress Fill */}
         <div
           className="absolute h-[3px] bg-ink rounded-full pointer-events-none group-hover:h-1 transition-all duration-150"
           style={{ width: `${effectiveVol}%` }}
         />
-        
-        {/* Slider Handle */}
         <div
-          className="absolute w-2 h-2 rounded-full bg-canvas border border-hairline-strong opacity-0 group-hover:opacity-100 pointer-events-none shadow-sm transition-opacity duration-150"
-          style={{ left: `calc(${effectiveVol}% - 4px)` }}
+          className={`absolute w-2.5 h-2.5 rounded-full bg-canvas border border-hairline-strong pointer-events-none transition-all duration-150 ${
+            effectiveVol > 0 ? 'opacity-100' : 'opacity-0'
+          }`}
+          style={{ left: `calc(${effectiveVol}% - 5px)` }}
         />
       </div>
     </div>

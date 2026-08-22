@@ -79,6 +79,65 @@
   /* Typography */
   --font-sans: Geist, Inter, system-ui, -apple-system, sans-serif;
   --font-mono: Geist Mono, ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
+
+  /* Cinematic motion tokens (GPU-only: transform/opacity/filter) */
+  --animate-mesh-drift: mesh-drift 28s ease-in-out infinite alternate;
+  --animate-eq: eq 0.9s ease-in-out infinite;
+  --animate-breathe: breathe 7s ease-in-out infinite;
+  --animate-shimmer: shimmer 1.8s linear infinite;
+  --animate-spin-slow: spin 14s linear infinite;
+  --animate-marquee: marquee 36s linear infinite;
+
+  @keyframes marquee {
+    0%   { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+
+  @keyframes mesh-drift {
+    0%   { transform: translate3d(-2%, -1%, 0) scale(1) rotate(0deg); }
+    50%  { transform: translate3d(2%, 2%, 0) scale(1.08) rotate(2deg); }
+    100% { transform: translate3d(-1%, 1%, 0) scale(1.04) rotate(-1.5deg); }
+  }
+  @keyframes eq {
+    0%, 100% { transform: scaleY(0.25); }
+    35%      { transform: scaleY(var(--eq-peak, 1)); }
+    70%      { transform: scaleY(0.45); }
+  }
+  @keyframes breathe {
+    0%, 100% { transform: scale(1); }
+    50%      { transform: scale(1.025); }
+  }
+  @keyframes shimmer {
+    0%   { transform: translateX(-100%); }
+    100% { transform: translateX(200%); }
+  }
+
+  /* Type scale — DESIGN.md (weight ceiling 600, negative display tracking) */
+  --text-display-xl: 48px;
+  --text-display-xl--line-height: 48px;
+  --text-display-xl--letter-spacing: -2.4px;
+  --text-display-xl--font-weight: 600;
+  --text-display-lg: 32px;
+  --text-display-lg--line-height: 40px;
+  --text-display-lg--letter-spacing: -1.28px;
+  --text-display-lg--font-weight: 600;
+  --text-display-md: 24px;
+  --text-display-md--line-height: 32px;
+  --text-display-md--letter-spacing: -0.96px;
+  --text-display-md--font-weight: 600;
+  --text-display-sm: 20px;
+  --text-display-sm--line-height: 28px;
+  --text-display-sm--letter-spacing: -0.6px;
+  --text-display-sm--font-weight: 600;
+  --text-body-lg: 18px;
+  --text-body-lg--line-height: 28px;
+  --text-body-md: 16px;
+  --text-body-md--line-height: 24px;
+  --text-body-sm: 14px;
+  --text-body-sm--line-height: 20px;
+  --text-body-sm--letter-spacing: -0.28px;
+  --text-caption: 12px;
+  --text-caption--line-height: 16px;
 }
 
 @layer base {
@@ -97,13 +156,38 @@
   background: linear-gradient(135deg, var(--color-gradient-develop-start) 0%, var(--color-gradient-preview-end) 50%, var(--color-gradient-ship-end) 100%);
 }
 
+/* Mono technical eyebrow — the only place uppercase is allowed */
+@utility eyebrow {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-mute);
+}
+
+/* Hero-scale atmospheric mesh — the entire decorative system.
+   Hero scale only; never miniaturise (DESIGN.md). */
 @utility mesh-gradient-backdrop {
-  background-image: 
-    radial-gradient(at 27% 37%, hsla(167, 72%, 60%, 0.15) 0px, transparent 50%),
-    radial-gradient(at 97% 21%, hsla(256, 76%, 47%, 0.12) 0px, transparent 50%),
-    radial-gradient(at 52% 99%, hsla(355, 100%, 63%, 0.1) 0px, transparent 50%),
-    radial-gradient(at 10% 29%, hsla(210, 100%, 47%, 0.15) 0px, transparent 50%);
+  background-image:
+    radial-gradient(at 27% 37%, hsla(167, 72%, 60%, 0.28) 0px, transparent 50%),
+    radial-gradient(at 97% 21%, hsla(256, 76%, 47%, 0.22) 0px, transparent 50%),
+    radial-gradient(at 52% 99%, hsla(355, 100%, 63%, 0.18) 0px, transparent 50%),
+    radial-gradient(at 10% 29%, hsla(210, 100%, 47%, 0.25) 0px, transparent 50%),
+    radial-gradient(at 80% 60%, hsla(42, 94%, 57%, 0.14) 0px, transparent 45%);
   filter: blur(80px);
+}
+
+@utility card-shadow-lvl1 {
+  box-shadow: 0px 0px 0px 1px rgba(0, 0, 0, 0.05);
+}
+
+@utility card-shadow-lvl2 {
+  box-shadow:
+    0px 0px 0px 1px rgba(0, 0, 0, 0.05),
+    0px 1px 1px rgba(0, 0, 0, 0.02),
+    0px 2px 2px rgba(0, 0, 0, 0.04);
 }
 
 @utility card-shadow-lvl3 {
@@ -147,13 +231,14 @@
     0px 24px 40px -8px rgba(0, 0, 0, 0.45);
 }
 
-/* Dark mode: mesh gradient slightly more vivid */
+/* Dark mode: mesh stays visible against ink — atmospheric, not washed out */
 .dark .mesh-gradient-backdrop {
   background-image:
-    radial-gradient(at 27% 37%, hsla(167, 72%, 60%, 0.08) 0px, transparent 50%),
-    radial-gradient(at 97% 21%, hsla(256, 76%, 47%, 0.06) 0px, transparent 50%),
-    radial-gradient(at 52% 99%, hsla(355, 100%, 63%, 0.05) 0px, transparent 50%),
-    radial-gradient(at 10% 29%, hsla(210, 100%, 47%, 0.08) 0px, transparent 50%);
+    radial-gradient(at 27% 37%, hsla(167, 72%, 60%, 0.16) 0px, transparent 50%),
+    radial-gradient(at 97% 21%, hsla(256, 76%, 47%, 0.14) 0px, transparent 50%),
+    radial-gradient(at 52% 99%, hsla(355, 100%, 63%, 0.12) 0px, transparent 50%),
+    radial-gradient(at 10% 29%, hsla(210, 100%, 47%, 0.16) 0px, transparent 50%),
+    radial-gradient(at 80% 60%, hsla(42, 94%, 57%, 0.08) 0px, transparent 45%);
 }
 
 /* Custom thin scrollbars styling */
@@ -175,4 +260,103 @@
 .custom-scrollbar {
   scrollbar-width: thin;
   scrollbar-color: var(--color-hairline) transparent;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   CINEMATIC LAYER — atmosphere, glass, grain, motion
+   GPU-only props (transform/opacity/filter). Reduced-motion safe.
+   ───────────────────────────────────────────────────────────── */
+
+/* Drifting hero mesh — the mesh breathes instead of sitting still */
+@utility mesh-gradient-live {
+  background-image:
+    radial-gradient(at 27% 37%, hsla(167, 72%, 60%, 0.30) 0px, transparent 50%),
+    radial-gradient(at 97% 21%, hsla(256, 76%, 47%, 0.24) 0px, transparent 50%),
+    radial-gradient(at 52% 99%, hsla(355, 100%, 63%, 0.20) 0px, transparent 50%),
+    radial-gradient(at 10% 29%, hsla(210, 100%, 47%, 0.27) 0px, transparent 50%),
+    radial-gradient(at 80% 60%, hsla(42, 94%, 57%, 0.16) 0px, transparent 45%);
+  filter: blur(80px);
+  animation: var(--animate-mesh-drift);
+  will-change: transform;
+}
+.dark .mesh-gradient-live {
+  background-image:
+    radial-gradient(at 27% 37%, hsla(167, 72%, 60%, 0.17) 0px, transparent 50%),
+    radial-gradient(at 97% 21%, hsla(256, 76%, 47%, 0.15) 0px, transparent 50%),
+    radial-gradient(at 52% 99%, hsla(355, 100%, 63%, 0.13) 0px, transparent 50%),
+    radial-gradient(at 10% 29%, hsla(210, 100%, 47%, 0.17) 0px, transparent 50%),
+    radial-gradient(at 80% 60%, hsla(42, 94%, 57%, 0.09) 0px, transparent 45%);
+}
+
+/* Film grain — one fixed overlay per view, never animated (cheap) */
+@utility grain-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 180px 180px;
+  opacity: 0.032;
+  mix-blend-mode: overlay;
+}
+.dark .grain-overlay {
+  opacity: 0.05;
+}
+
+/* Glass chrome for persistent bars (player, mobile nav) */
+@utility glass-bar {
+  background-color: color-mix(in srgb, var(--canvas) 82%, transparent);
+  backdrop-filter: blur(20px) saturate(1.4);
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
+}
+
+/* Perspective helpers for card tilt depth */
+@utility perspective-card {
+  perspective: 900px;
+}
+@utility preserve-3d {
+  transform-style: preserve-3d;
+}
+
+/* Skeleton shimmer sweep */
+@utility shimmer-sweep {
+  position: relative;
+  overflow: hidden;
+}
+.shimmer-sweep::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in srgb, var(--canvas) 65%, transparent) 50%,
+    transparent 100%
+  );
+  animation: var(--animate-shimmer);
+}
+
+/* Equalizer bar primitive — pair with inline --eq-peak + animation-delay */
+.eq-bar {
+  transform-origin: bottom;
+  transform: scaleY(0.25);
+  animation: eq 0.9s ease-in-out infinite;
+  will-change: transform;
+}
+
+/* Outlined display text — editorial moments only */
+@utility text-outline {
+  color: transparent;
+  -webkit-text-stroke: 1px var(--hairline-strong);
+}
+
+/* Respect users who opt out of motion */
+@media (prefers-reduced-motion: reduce) {
+  .mesh-gradient-live,
+  .eq-bar,
+  .shimmer-sweep::after {
+    animation: none !important;
+  }
+  .mesh-gradient-live {
+    transform: none;
+  }
 }
