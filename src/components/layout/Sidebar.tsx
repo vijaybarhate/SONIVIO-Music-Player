@@ -30,19 +30,26 @@ const Sidebar: React.FC = () => {
 
   return (
     <aside
-      className={`w-16 md:w-60 bg-canvas border-r border-hairline flex flex-col h-full flex-shrink-0 z-40 ${
+      style={{ ['--d' as string]: '0.05s' }}
+      className={`a-slideL w-16 md:w-60 bg-canvas border-r border-hairline flex flex-col h-full flex-shrink-0 z-40 ${
         currentTrack ? 'pb-[88px]' : ''
       }`}
     >
       {/* Brand */}
       <div className="h-16 flex items-center px-4 md:px-6 border-b border-hairline">
         <a href={`${basePath}/`} className="flex items-center gap-3 select-none group focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-hairline-strong rounded-sm" aria-label="SONIVIO home">
-          <div className="relative w-8 h-8 rounded-md bg-ink flex items-center justify-center flex-shrink-0 card-shadow-lvl3 overflow-hidden">
+          <div
+            style={{ ['--d' as string]: '0.26s' }}
+            className="a-popIn relative w-8 h-8 rounded-md bg-ink flex items-center justify-center flex-shrink-0 card-shadow-lvl3 overflow-hidden"
+          >
             <Music2 className="text-canvas w-4 h-4 relative z-10 transition-transform duration-300 group-hover:scale-110" />
             {/* Gradient sheen sweep on hover */}
             <div className="absolute inset-0 accent-gradient opacity-0 group-hover:opacity-60 transition-opacity duration-300" />
           </div>
-          <span className="hidden md:block text-base font-sans font-semibold tracking-tight text-ink">
+          <span
+            style={{ ['--d' as string]: '0.32s' }}
+            className="a-riseIn hidden md:block text-base font-sans font-semibold tracking-tight text-ink"
+          >
             SONIVIO
           </span>
         </a>
@@ -50,16 +57,17 @@ const Sidebar: React.FC = () => {
 
       {/* Nav */}
       <nav className="flex-1 px-3 py-6 space-y-1 overflow-y-auto custom-scrollbar">
-        <p className="hidden md:block eyebrow px-3 mb-2">Browse</p>
-        {navItems.map((item) => {
+        <p style={{ ['--d' as string]: '0.34s' }} className="a-riseIn hidden md:block eyebrow px-3 mb-2">Browse</p>
+        {navItems.map((item, i) => {
           const active = isLinkActive(item.path);
           return (
             <a
               key={item.path}
               href={item.path}
               aria-current={active ? 'page' : undefined}
+              style={{ ['--d' as string]: `${0.38 + i * 0.05}s` }}
               className={`
-                relative flex items-center gap-4 px-3 py-2.5 rounded-md transition-colors group
+                a-riseIn relative flex items-center gap-4 px-3 py-2.5 rounded-md transition-colors group
                 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-hairline-strong
                 ${active ? 'text-ink' : 'text-body hover:text-ink'}
               `}
@@ -96,7 +104,8 @@ const Sidebar: React.FC = () => {
         <button
           onClick={toggleTheme}
           aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-          className="flex items-center gap-3 px-3 py-2 text-xs rounded-md transition-colors text-body hover:text-ink hover:bg-canvas-soft w-full text-left cursor-pointer group focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-hairline-strong"
+          style={{ ['--d' as string]: '0.62s' }}
+          className="a-riseIn flex items-center gap-3 px-3 py-2 text-xs rounded-md transition-colors text-body hover:text-ink hover:bg-canvas-soft w-full text-left cursor-pointer group focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-hairline-strong"
         >
           <span className="relative w-4 h-4 flex-shrink-0 flex items-center justify-center">
             <AnimatePresence mode="wait" initial={false}>
@@ -117,8 +126,9 @@ const Sidebar: React.FC = () => {
 
         <a
           href={`${basePath}/about`}
+          style={{ ['--d' as string]: '0.68s' }}
           className={`
-            flex items-center gap-3 px-3 py-2 text-xs rounded-md transition-colors group focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-hairline-strong
+            a-riseIn flex items-center gap-3 px-3 py-2 text-xs rounded-md transition-colors group focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-hairline-strong
             ${
               isLinkActive(`${basePath}/about`)
                 ? 'bg-canvas-soft-2 text-ink font-medium'

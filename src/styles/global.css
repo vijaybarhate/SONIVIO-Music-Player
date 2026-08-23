@@ -360,3 +360,189 @@
     transform: none;
   }
 }
+
+/* ─────────────────────────────────────────────────────────────
+   LIQUID GLASS + CHOREOGRAPHY LAYER
+   Frosted translucent panels over atmosphere, beat-timed entries,
+   mask reveals, self-drawing strokes, specular sheen.
+   ───────────────────────────────────────────────────────────── */
+
+:root {
+  --e-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --e-soft: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --e-pen: cubic-bezier(0.37, 0.01, 0.2, 1);
+}
+
+/* Liquid glass panel — frosted over whatever sits behind it */
+@utility glass-panel {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.14) 0%,
+    rgba(255, 255, 255, 0.19) 24%,
+    rgba(255, 255, 255, 0.185) 78%,
+    rgba(255, 255, 255, 0.165) 100%
+  );
+  backdrop-filter: blur(26px) saturate(118%);
+  -webkit-backdrop-filter: blur(26px) saturate(118%);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+.dark .glass-panel {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.09) 0%,
+    rgba(255, 255, 255, 0.13) 24%,
+    rgba(255, 255, 255, 0.125) 78%,
+    rgba(255, 255, 255, 0.11) 100%
+  );
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+/* Light-mode variant: ink-tinted frost so it reads on white canvas */
+.glass-panel:not(.dark *) {
+  background: linear-gradient(
+    180deg,
+    rgba(23, 23, 23, 0.03) 0%,
+    rgba(23, 23, 23, 0.055) 24%,
+    rgba(23, 23, 23, 0.05) 78%,
+    rgba(23, 23, 23, 0.042) 100%
+  );
+  border-color: rgba(23, 23, 23, 0.08);
+}
+
+/* Specular sheen coda — one sweep, late in the timeline */
+.sheen {
+  position: relative;
+  overflow: hidden;
+}
+.sheen::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 38%;
+  pointer-events: none;
+  background: linear-gradient(100deg, transparent 0%, rgba(255, 255, 255, 0.17) 50%, transparent 100%);
+  transform: translate3d(-150%, 0, 0) skewX(-18deg);
+  animation: sheen 1.15s var(--e-soft) 2.55s 1 both;
+}
+.dark .sheen::after {
+  background: linear-gradient(100deg, transparent 0%, rgba(255, 255, 255, 0.09) 50%, transparent 100%);
+}
+
+/* Choreography primitives — delay via inline style="--d:.36s" */
+.a-riseIn {
+  animation: riseIn 0.6s var(--e-out) both;
+  animation-delay: var(--d, 0s);
+}
+.a-slideL {
+  animation: slideL 0.92s var(--e-out) both;
+  animation-delay: var(--d, 0s);
+}
+.a-slideR {
+  animation: slideR 0.95s var(--e-out) both;
+  animation-delay: var(--d, 0s);
+}
+.a-popIn {
+  animation: popIn 0.58s var(--e-out) both;
+  animation-delay: var(--d, 0s);
+}
+.a-growY {
+  transform-origin: center;
+  animation: growY 0.5s var(--e-out) both;
+  animation-delay: var(--d, 0s);
+}
+.a-wipeRight {
+  animation: wipeRight 0.8s var(--e-out) both;
+  animation-delay: var(--d, 0s);
+}
+.a-wipeDown {
+  animation: wipeDown 0.9s var(--e-soft) both;
+  animation-delay: var(--d, 0s);
+}
+
+/* Mask-reveal headline line: parent .ln { overflow:hidden } child animates */
+.ln {
+  display: block;
+  overflow: hidden;
+  padding-bottom: 0.08em;
+  margin-bottom: -0.08em;
+}
+.ln > span {
+  display: block;
+  animation: lineUp 1.05s var(--e-out) both;
+  animation-delay: var(--d, 0s);
+}
+
+/* Self-drawing stroke (pair with pathLength="1" + stroke-dasharray:1) */
+.draw-line {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: drawLine 1.6s var(--e-pen) both;
+  animation-delay: var(--d, 1.5s);
+}
+.wipe-x {
+  transform-origin: left;
+  animation: wipeX 1.42s var(--e-pen) both;
+  animation-delay: var(--d, 1.72s);
+}
+
+@keyframes sheen {
+  from { transform: translate3d(-150%, 0, 0) skewX(-18deg); }
+  to   { transform: translate3d(260%, 0, 0) skewX(-18deg); }
+}
+@keyframes riseIn {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes slideL {
+  from { opacity: 0; transform: translateX(-26px); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes slideR {
+  from { opacity: 0; transform: translateX(30px) scale(0.985); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes popIn {
+  from { opacity: 0; transform: scale(0.7); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes growY {
+  from { transform: scaleY(0); }
+  to   { transform: scaleY(1); }
+}
+@keyframes lineUp {
+  from { transform: translateY(115%); }
+  to   { transform: none; }
+}
+@keyframes wipeDown {
+  from { clip-path: inset(0 0 100% 0); }
+  to   { clip-path: inset(0 0 -10% 0); }
+}
+@keyframes wipeRight {
+  from { clip-path: inset(0 100% 0 0); }
+  to   { clip-path: inset(0 -10% 0 0); }
+}
+@keyframes drawLine {
+  from { stroke-dashoffset: 1; }
+  to   { stroke-dashoffset: 0; }
+}
+@keyframes wipeX {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sheen::after,
+  .a-riseIn, .a-slideL, .a-slideR, .a-popIn, .a-growY,
+  .a-wipeRight, .a-wipeDown,
+  .ln > span,
+  .draw-line,
+  .wipe-x {
+    animation: none !important;
+  }
+  .draw-line {
+    stroke-dasharray: none;
+    stroke-dashoffset: 0;
+  }
+}

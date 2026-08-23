@@ -1,14 +1,33 @@
-# SONIVIO Rewrite Plan v2 — "Godly pass"
+# SONIVIO Rewrite Plan v3 — "Liquid glass + choreography pass"
 
-Audit verdict (v1): two competing design systems, no brand voice, AI-slop tropes.
-Steps 1–2 DONE (legacy purged, Geist tokens live).
+User verdict on v2: better but not award-level; feels like surface polish.
+Benchmark: liquid-glass dashboard spec — frosted glass over atmosphere,
+beat-timed entry choreography, mask-reveal headlines, self-drawing chart,
+specular sheen. Port that language onto SONIVIO (music brand, not weather).
 
-New directive (user): elevate to Awwwards/godly tier — cinematic motion, 3D-feel
-depth, scroll choreography, audio-reactive polish. References: cinematic AI/3D
-website builds, award-site clones. Keep DESIGN.md token system as foundation;
-add a cinematic layer ON TOP of it. No new heavy deps — framer-motion (installed)
-+ GPU-only CSS. No WebGL (player app, not marketing site): depth comes from
-perspective tilts, layered blur, grain, and motion.
+## Step A — Design-language layer (global.css)
+- Easing tokens: --e-out (.16,1,.3,1) / --e-soft (.22,.61,.36,1) / --e-pen (.37,.01,.2,1).
+- Liquid glass recipes: .glass-panel (translucent white gradient stack +
+  backdrop blur/saturate + hairline light border), .glass-chip, dark-mode tuned.
+- Specular sheen ::after (skewX -18°, translate sweep, runs once @2.55s).
+- Choreography keyframes: riseIn / slideL / slideR / popIn / growY / lineUp /
+  wipeDown / wipeRight / drawLine / wipeX + .a-* classes driven by --d delay var.
+- prefers-reduced-motion kills everything.
+
+## Step B — Signature moment: Waveform.tsx
+SVG wave (viewBox 0 0 835 230, preserveAspectRatio none): 3 outline strokes
+DRAW themselves (pathLength=1 + dashoffset, staggered widths/opacities),
+then fill WIPES left→right (clipPath scaleX). Used in ExpandedPlayer
+(replaces bar visualizer) + Home hero as brand strip.
+
+## Step C — Choreographed entries (beat-matched)
+- Sidebar: slideL; logo popIn; nav items riseIn staggered; active pip glow.
+- Home hero: eyebrow riseIn → chip wipeRight → H1 lineUp mask reveal per line
+  → blurb wipeDown; featured card = glass panel + sheen coda.
+- Header tools popIn staggered. Player chrome keeps spring physics.
+
+## Step D — Verify (astro check/build + screenshots) & commit
+
 
 ## Step 3 — Cinematic component pass (tokens only)
 Global atmosphere (global.css):

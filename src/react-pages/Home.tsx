@@ -6,29 +6,9 @@ import { InlineError, ErrorState } from '../components/common/FeedbackStates';
 import { motion } from 'framer-motion';
 import { Play, ArrowUpRight } from 'lucide-react';
 import { usePlayerStore } from '../store/playerStore';
+import Waveform from '../components/common/Waveform';
 
 const EASE = [0.22, 1, 0.36, 1] as const;
-
-/* ── Staggered word-reveal headline ─────────────────────────── */
-const RevealWords: React.FC<{ text: string; className?: string; delay?: number }> = ({
-  text,
-  className = '',
-  delay = 0,
-}) => (
-  <span className={`inline-flex flex-wrap gap-x-[0.28em] ${className}`} aria-label={text} role="text">
-    {text.split(' ').map((word, i) => (
-      <span key={i} className="overflow-hidden inline-flex pb-[0.08em] -mb-[0.08em]">
-        <motion.span
-          initial={{ y: '110%' }}
-          animate={{ y: 0 }}
-          transition={{ duration: 0.7, ease: EASE, delay: delay + i * 0.07 }}
-        >
-          {word}
-        </motion.span>
-      </span>
-    ))}
-  </span>
-);
 
 /* ── Genre marquee — editorial band between sections ────────── */
 const MARQUEE_ITEMS = ['Lo-fi', 'Synthwave', 'Hip-Hop', 'Indie', 'Classical', 'EDM', 'Jazz', 'Bollywood', 'Rock', 'Ambient'];
@@ -253,30 +233,38 @@ const Home: React.FC = () => {
         <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-canvas-soft to-transparent pointer-events-none" aria-hidden="true" />
 
         <div className="relative z-10 max-w-3xl">
-          <motion.p
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, ease: EASE }}
-            className="eyebrow mb-4"
+          <span
+            style={{ ['--d' as string]: '0.44s' }}
+            className="a-wipeRight sheen glass-panel inline-flex items-center rounded-full px-4 py-1.5 mb-6"
           >
-            {greetingData.tagline}
-          </motion.p>
+            <span className="eyebrow">{greetingData.tagline}</span>
+          </span>
 
-          <h1 className="text-display-xl md:text-[56px] md:leading-[60px] md:tracking-[-2.8px] text-ink leading-tight">
-            <RevealWords text={greetingData.greeting} delay={0.1} />{' '}
-            <span className="bg-gradient-to-r from-gradient-develop-start via-gradient-preview-end to-gradient-ship-end bg-clip-text text-transparent">
-              <RevealWords text="Press play." delay={0.24} />
+          <h1 className="text-display-xl md:text-[64px] md:leading-[68px] md:tracking-[-3px] text-ink leading-tight">
+            <span className="ln">
+              <span style={{ ['--d' as string]: '0.56s' }}>{greetingData.greeting}</span>
+            </span>
+            <span className="ln">
+              <span
+                style={{ ['--d' as string]: '0.67s' }}
+                className="bg-gradient-to-r from-gradient-develop-start via-gradient-preview-end to-gradient-ship-end bg-clip-text text-transparent"
+              >
+                Press play.
+              </span>
             </span>
           </h1>
 
-          <motion.p
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.55, ease: EASE, delay: 0.5 }}
-            className="mt-5 max-w-md text-body-md text-body"
+          <p
+            style={{ ['--d' as string]: '0.9s' }}
+            className="a-wipeDown mt-5 max-w-md text-body-md text-body"
           >
             Millions of tracks, one cinematic player. Built for people who feel music.
-          </motion.p>
+          </p>
+
+          {/* Signature brand strip — draws itself, then fills */}
+          <div style={{ ['--d' as string]: '1.4s' }} className="a-riseIn mt-8 max-w-lg opacity-80">
+            <Waveform className="w-full h-14 md:h-16" />
+          </div>
         </div>
       </header>
 
@@ -290,7 +278,7 @@ const Home: React.FC = () => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.55, ease: EASE }}
-            className="mb-6 md:mb-10 relative rounded-lg border border-hairline bg-canvas p-5 md:p-8 overflow-hidden flex flex-col sm:flex-row justify-between gap-4 md:gap-6 card-shadow-lvl4 cursor-pointer hover:border-hairline-strong transition-colors duration-300 group"
+            className="mb-6 md:mb-10 relative rounded-lg glass-panel sheen p-5 md:p-8 overflow-hidden flex flex-col sm:flex-row justify-between gap-4 md:gap-6 card-shadow-lvl4 cursor-pointer hover:border-hairline-strong transition-colors duration-300 group"
             onClick={() => play(featured)}
           >
             <div className="absolute inset-0 mesh-gradient-backdrop opacity-60 dark:opacity-80 pointer-events-none" aria-hidden="true" />

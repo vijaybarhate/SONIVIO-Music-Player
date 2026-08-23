@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ChevronDown, Share2, Heart, ArrowUpRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { usePlayerStore } from '../../store/playerStore';
@@ -8,42 +8,12 @@ import PlayerControls from './PlayerControls';
 import ProgressBar from './ProgressBar';
 import VolumeControl from './VolumeControl';
 import Equalizer from '../common/Equalizer';
+import Waveform from '../common/Waveform';
 import { getRelatedTracks, getTrackDetails } from '../../services/youtube';
 import type { Track } from '../../types';
 import SongCard from '../cards/SongCard';
 
 const EASE = [0.32, 0.72, 0, 1] as const;
-
-/** Ambient pseudo-visualizer — playing-state driven, GPU-only scaleY bars. */
-const Visualizer: React.FC<{ playing: boolean }> = ({ playing }) => {
-  const bars = useMemo(
-    () =>
-      Array.from({ length: 56 }, (_, i) => ({
-        peak: 0.2 + ((i * 7919) % 100) / 100 * 0.8,
-        delay: ((i * 331) % 90) / 100,
-        duration: 0.6 + ((i * 457) % 70) / 100,
-      })),
-    []
-  );
-
-  return (
-    <div className="flex items-end justify-center gap-[3px] h-10 md:h-14 w-full max-w-xl mx-auto" aria-hidden="true">
-      {bars.map((b, i) => (
-        <span
-          key={i}
-          className="eq-bar flex-1 max-w-[6px] rounded-full bg-gradient-to-t from-hairline-strong/40 to-ink/70 dark:to-ink/50"
-          style={{
-            height: '100%',
-            animationDelay: `${b.delay}s`,
-            animationDuration: `${b.duration}s`,
-            animationPlayState: playing ? 'running' : 'paused',
-            ['--eq-peak' as string]: b.peak,
-          }}
-        />
-      ))}
-    </div>
-  );
-};
 
 const ExpandedPlayer: React.FC = () => {
   const { currentTrack, isPlaying } = usePlayerStore();
@@ -204,14 +174,14 @@ const ExpandedPlayer: React.FC = () => {
               </motion.button>
             </motion.div>
 
-            {/* Visualizer */}
+            {/* Signature waveform — draws itself, then fills */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.7, delay: 0.3 }}
               className="w-full mb-5 md:mb-6 px-4"
             >
-              <Visualizer playing={isPlaying} />
+              <Waveform className="h-16 md:h-20 w-full max-w-xl mx-auto" />
             </motion.div>
 
             {/* Controls panel */}
