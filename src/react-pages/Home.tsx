@@ -196,7 +196,7 @@ const Home: React.FC = () => {
   const [featured, setFeatured] = useState<Track | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
-  const { play } = usePlayerStore();
+  const { play, isPlaying } = usePlayerStore();
 
   useEffect(() => {
     const fetchHeroData = async () => {
@@ -261,9 +261,9 @@ const Home: React.FC = () => {
             Millions of tracks, one cinematic player. Built for people who feel music.
           </p>
 
-          {/* Signature brand strip — draws itself, then fills */}
+          {/* Signature brand strip — draws itself, then flows with the music */}
           <div style={{ ['--d' as string]: '1.4s' }} className="a-riseIn mt-8 max-w-lg opacity-80">
-            <Waveform className="w-full h-14 md:h-16" />
+            <Waveform className="w-full h-14 md:h-16" playing={isPlaying} />
           </div>
         </div>
       </header>
@@ -293,18 +293,25 @@ const Home: React.FC = () => {
               </div>
 
               <button
-                className="h-10 px-5 bg-ink text-canvas font-sans font-medium text-sm rounded-full flex items-center gap-2 card-shadow-lvl3 self-start transition-transform duration-200 group-hover:scale-[1.03] active:scale-95 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-link"
+                className="relative h-10 px-5 bg-ink text-canvas font-sans font-medium text-sm rounded-full flex items-center gap-2 card-shadow-lvl3 self-start transition-transform duration-200 group-hover:scale-[1.03] active:scale-95 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-link"
                 onClick={(e) => {
                   e.stopPropagation();
                   play(featured);
                 }}
               >
+                {/* Pulsing halo — the "live" CTA */}
+                <motion.span
+                  initial={{ scale: 0.9, opacity: 0.5 }}
+                  animate={{ scale: 1.5, opacity: 0 }}
+                  transition={{ duration: 1.8, repeat: Infinity, ease: 'easeOut' }}
+                  className="absolute inset-0 rounded-full border border-link pointer-events-none"
+                />
                 <Play size={14} fill="currentColor" />
                 <span>Play Now</span>
               </button>
             </div>
 
-            <div className="relative z-10 flex-shrink-0 hidden sm:block w-28 h-28 md:w-36 md:h-36 rounded-md overflow-hidden border border-hairline shadow-md self-end transition-transform duration-500 ease-out group-hover:scale-[1.04] group-hover:-rotate-1">
+            <div className="relative z-10 flex-shrink-0 hidden sm:block w-28 h-28 md:w-36 md:h-36 rounded-md overflow-hidden border border-hairline shadow-md self-end transition-transform duration-500 ease-out group-hover:scale-[1.04] group-hover:-rotate-1 animate-float">
               <img src={featured.thumbnail} alt="" className="w-full h-full object-cover" loading="eager" />
             </div>
           </motion.section>

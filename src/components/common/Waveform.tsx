@@ -4,6 +4,8 @@ interface WaveformProps {
   className?: string;
   /** Skip entry choreography (e.g. reduced-motion or re-renders) */
   instant?: boolean;
+  /** Live mode — energy flows through the wave while audio plays */
+  playing?: boolean;
 }
 
 const WAVE =
@@ -12,8 +14,10 @@ const WAVE =
 /**
  * Signature brand moment — a waveform that DRAWS itself (three outline
  * strokes, pen easing) then FILLS left→right behind the pen.
+ * When `playing`, energy flows through the strokes (dash-flow) and the
+ * fill pulses — the wave comes alive with the music.
  */
-const Waveform: React.FC<WaveformProps> = ({ className = '', instant = false }) => {
+const Waveform: React.FC<WaveformProps> = ({ className = '', instant = false, playing = false }) => {
   const uid = useId().replace(/[^a-zA-Z0-9]/g, '');
   const clipFill = `wf-fill-${uid}`;
   const gradStroke = `wg-${uid}`;
@@ -48,12 +52,16 @@ const Waveform: React.FC<WaveformProps> = ({ className = '', instant = false }) 
         </clipPath>
       </defs>
 
-      {/* Fill — wipes in behind the pen */}
+      {/* Fill — wipes in behind the pen; pulses while playing */}
       <g clipPath={`url(#${clipFill})`}>
-        <path d={`${WAVE} L835 230 L0 230 Z`} fill={`url(#${gradFill})`} />
+        <path
+          d={`${WAVE} L835 230 L0 230 Z`}
+          fill={`url(#${gradFill})`}
+          className={playing ? 'wave-fill-pulse' : ''}
+        />
       </g>
 
-      {/* Outline strokes — draw themselves, widest + faintest first */}
+      {/* Outline strokes — draw themselves, then flow while playing */}
       <path
         d={WAVE}
         pathLength={1}
@@ -83,8 +91,14 @@ const Waveform: React.FC<WaveformProps> = ({ className = '', instant = false }) 
         stroke={`url(#${gradStroke})`}
         strokeWidth="3.4"
         strokeLinecap="round"
-        className={instant ? '' : 'draw-line'}
-        style={instant ? undefined : { ['--d' as string]: '1.5s' }}
+        className={playing ? 'wave-flow wave-flow-glow' : instant ? '' : 'draw-line'}
+        style={
+          playing
+            ? undefined
+            : instant
+              ? undefined
+              : { ['--d' as string]: '1.5s' }
+        }
       />
     </svg>
   );

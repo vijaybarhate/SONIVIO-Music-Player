@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ChevronDown, Share2, Heart, ArrowUpRight } from 'lucide-react';
+import { ChevronDown, Share2, Heart, ArrowUpRight, Music2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { usePlayerStore } from '../../store/playerStore';
 import { useLibraryStore } from '../../store/libraryStore';
@@ -123,27 +123,48 @@ const ExpandedPlayer: React.FC = () => {
 
           {/* Main */}
           <div className="relative z-10 flex-1 flex flex-col items-center px-4 md:px-8 py-6 md:py-10 w-full max-w-4xl mx-auto">
-            {/* Artwork — breathes while playing */}
+            {/* Artwork — spinning vinyl record while playing */}
             <motion.div
               initial={{ opacity: 0, y: 32, scale: 0.94 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               transition={{ duration: 0.55, ease: EASE, delay: 0.08 }}
-              className={`w-full max-w-[220px] sm:max-w-[320px] aspect-square rounded-lg overflow-hidden border border-hairline modal-shadow-lvl5 mb-6 md:mb-8 bg-canvas-soft-2 ${
-                isPlaying ? 'animate-breathe' : ''
-              }`}
+              className="relative w-full max-w-[220px] sm:max-w-[320px] aspect-square mb-6 md:mb-8"
             >
-              <AnimatePresence mode="wait" initial={false}>
-                <motion.img
-                  key={currentTrack.id}
-                  src={currentTrack.thumbnail}
-                  alt=""
-                  initial={{ opacity: 0, scale: 1.06 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.4 }}
-                  className="w-full h-full object-cover"
-                />
-              </AnimatePresence>
+              {/* Record platter + grooves */}
+              <div className="absolute inset-0 rounded-full bg-ink vinyl-grooves shadow-[0_0_60px_-12px_rgba(0,0,0,0.5)]" aria-hidden="true" />
+              <div className="absolute inset-0 rounded-full border border-hairline" aria-hidden="true" />
+
+              {/* Rotating artwork */}
+              <div
+                className={`absolute inset-[6%] rounded-full overflow-hidden border border-hairline modal-shadow-lvl5 ${
+                  isPlaying ? 'animate-spin-record' : ''
+                }`}
+              >
+                <AnimatePresence mode="wait" initial={false}>
+                  <motion.img
+                    key={currentTrack.id}
+                    src={currentTrack.thumbnail}
+                    alt=""
+                    initial={{ opacity: 0, scale: 1.06 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.4 }}
+                    className="w-full h-full object-cover"
+                  />
+                </AnimatePresence>
+              </div>
+
+              {/* Center label */}
+              <div className="absolute inset-0 m-auto w-[18%] h-[18%] rounded-full bg-canvas border-2 border-hairline flex items-center justify-center shadow-md">
+                <Music2 size={14} className="text-ink" />
+              </div>
+
+              {/* Tonearm hint — appears while playing */}
+              {isPlaying && (
+                <div className="absolute -top-2 -right-2 w-10 h-10 rounded-full bg-canvas/80 backdrop-blur-sm border border-hairline flex items-center justify-center shadow-md">
+                  <Equalizer bars={3} className="h-2.5 text-link" />
+                </div>
+              )}
             </motion.div>
 
             {/* Title block — staggered entrance */}
@@ -174,14 +195,14 @@ const ExpandedPlayer: React.FC = () => {
               </motion.button>
             </motion.div>
 
-            {/* Signature waveform — draws itself, then fills */}
+            {/* Signature waveform — draws itself, then flows with the music */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.7, delay: 0.3 }}
               className="w-full mb-5 md:mb-6 px-4"
             >
-              <Waveform className="h-16 md:h-20 w-full max-w-xl mx-auto" />
+              <Waveform className="h-16 md:h-20 w-full max-w-xl mx-auto" playing={isPlaying} />
             </motion.div>
 
             {/* Controls panel */}

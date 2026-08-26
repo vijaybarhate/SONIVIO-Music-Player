@@ -110,7 +110,9 @@ const SongCard: React.FC<SongCardProps> = ({ track, context, variant = 'vertical
           onMouseLeave={resetTilt}
           style={{ rotateX, rotateY }}
           onClick={() => play(track, context)}
-          className="bg-canvas border border-hairline hover:border-hairline-strong rounded-lg overflow-hidden group cursor-pointer transition-[border-color,box-shadow] duration-200 card-shadow-lvl3 hover:card-shadow-lvl4 flex flex-col h-full"
+          className={`bg-canvas border rounded-lg overflow-hidden group cursor-pointer transition-[border-color,box-shadow] duration-200 card-shadow-lvl3 hover:card-shadow-lvl4 flex flex-col h-full ${
+            isActive ? 'border-link/40 ring-1 ring-link/20' : 'border-hairline hover:border-hairline-strong'
+          }`}
         >
           <div className="p-2 pb-0">
             <div className="relative aspect-square w-full rounded-md overflow-hidden bg-canvas-soft-2 border border-hairline">
@@ -135,7 +137,9 @@ const SongCard: React.FC<SongCardProps> = ({ track, context, variant = 'vertical
                   whileHover={{ scale: 1.08 }}
                   whileTap={{ scale: 0.94 }}
                   transition={SPRING}
-                  className="w-10 h-10 rounded-full bg-ink text-canvas flex items-center justify-center shadow-lg"
+                  className={`w-10 h-10 rounded-full bg-ink text-canvas flex items-center justify-center shadow-lg ${
+                    isActive ? 'shadow-[0_0_20px_-2px_color-mix(in_srgb,var(--color-link)_60%,transparent)]' : ''
+                  }`}
                 >
                   {isActive ? (
                     <Equalizer bars={4} className="h-3.5 text-canvas" playing={isPlaying} />
