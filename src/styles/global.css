@@ -371,6 +371,24 @@
   animation: var(--animate-shimmer);
 }
 
+/* Accent shimmer — brand-tinted sweep for hero-scale loading states */
+@utility shimmer-sweep-accent {
+  position: relative;
+  overflow: hidden;
+}
+.shimmer-sweep-accent::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in srgb, var(--color-link) 10%, transparent) 50%,
+    transparent 100%
+  );
+  animation: var(--animate-shimmer);
+}
+
 /* Equalizer bar primitive — pair with inline --eq-peak + animation-delay */
 .eq-bar {
   transform-origin: bottom;

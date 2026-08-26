@@ -21,9 +21,13 @@ const GenreMarquee: React.FC = () => (
     <div className="flex w-max animate-marquee will-change-transform">
       {[0, 1].map((copy) => (
         <div key={copy} className="flex items-center shrink-0">
-          {MARQUEE_ITEMS.map((genre) => (
+          {MARQUEE_ITEMS.map((genre, i) => (
             <span key={`${copy}-${genre}`} className="flex items-center">
-              <span className="text-display-lg md:text-display-xl text-ink/90 px-6 md:px-10 whitespace-nowrap">
+              <span
+                className={`text-display-lg md:text-display-xl px-6 md:px-10 whitespace-nowrap ${
+                  i % 2 === 0 ? 'text-ink/90' : 'text-outline'
+                }`}
+              >
                 {genre}
               </span>
               <span className="w-1.5 h-1.5 rounded-full accent-gradient shrink-0" />
@@ -82,7 +86,7 @@ const HorizontalSection = React.memo(({ title, index, fetcher }: SectionProps) =
           {[...Array(6)].map((_, i) => (
             <div
               key={i}
-              className="w-[140px] md:w-[180px] flex-shrink-0 shimmer-sweep bg-canvas-soft-2 border border-hairline rounded-lg h-[200px] md:h-[240px]"
+              className="w-[140px] md:w-[180px] flex-shrink-0 shimmer-sweep-accent bg-canvas-soft-2 border border-hairline rounded-lg h-[200px] md:h-[240px]"
             />
           ))}
         </div>
@@ -159,6 +163,13 @@ const MoodMixes = React.memo(() => {
             transition={{ delay: Math.min(i * 0.04, 0.25), duration: 0.4, ease: EASE }}
             className="h-24 md:h-28 rounded-lg p-4 md:p-5 cursor-pointer relative overflow-hidden bg-canvas border border-hairline hover:border-hairline-strong flex flex-col justify-between group card-shadow-lvl3 hover:card-shadow-lvl4 transition-[border-color,box-shadow] duration-200 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-hairline-strong"
           >
+            {/* Mood-color tint — the card's identity */}
+            <div
+              className="absolute inset-0 opacity-50 group-hover:opacity-80 transition-opacity duration-300 pointer-events-none"
+              style={{
+                background: `radial-gradient(130% 130% at 100% 0%, ${item.dot}26 0%, transparent 62%)`,
+              }}
+            />
             {/* Ink wash sweep on hover */}
             <div className="absolute inset-0 bg-ink translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out" />
 
@@ -266,11 +277,32 @@ const Home: React.FC = () => {
             <Waveform className="w-full h-14 md:h-16" playing={isPlaying} />
           </div>
         </div>
+
+        {/* Floating vinyl — featured artwork as a slow-spinning record */}
+        {featured && (
+          <div
+            style={{ ['--d' as string]: '1.1s' }}
+            className="a-popIn absolute right-4 md:right-12 top-1/2 -translate-y-1/2 hidden lg:block w-56 xl:w-72 aspect-square pointer-events-none"
+            aria-hidden="true"
+          >
+            <div className="absolute inset-0 rounded-full bg-ink vinyl-grooves shadow-[0_0_80px_-16px_rgba(0,0,0,0.55)]" />
+            <div className="absolute inset-0 rounded-full border border-hairline" />
+            <div className="absolute inset-[7%] rounded-full overflow-hidden border border-hairline animate-spin-slow">
+              <img src={featured.thumbnail} alt="" className="w-full h-full object-cover" loading="eager" />
+            </div>
+            <div className="absolute inset-0 m-auto w-[16%] h-[16%] rounded-full bg-canvas border-2 border-hairline shadow-md" />
+            {/* Glow accent behind the record */}
+            <div
+              className="absolute -inset-8 rounded-full blur-3xl opacity-30"
+              style={{ background: 'radial-gradient(circle, var(--color-link) 0%, transparent 65%)' }}
+            />
+          </div>
+        )}
       </header>
 
       {/* ── Featured banner ── */}
       {loading ? (
-        <div className="mb-6 md:mb-10 h-[180px] md:h-[240px] shimmer-sweep bg-canvas-soft-2 border border-hairline rounded-lg" />
+        <div className="mb-6 md:mb-10 h-[180px] md:h-[240px] shimmer-sweep-accent bg-canvas-soft-2 border border-hairline rounded-lg" />
       ) : (
         featured && (
           <motion.section

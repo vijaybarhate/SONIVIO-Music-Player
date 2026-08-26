@@ -317,6 +317,13 @@ const Search: React.FC = () => {
                     whileTap={{ scale: 0.98 }}
                     className="aspect-[16/10] rounded-lg p-4 md:p-5 cursor-pointer relative overflow-hidden bg-canvas border border-hairline hover:border-hairline-strong group card-shadow-lvl3 hover:card-shadow-lvl4 transition-[border-color,box-shadow] duration-200 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-hairline-strong"
                   >
+                    {/* Genre-color tint */}
+                    <div
+                      className="absolute inset-0 opacity-50 group-hover:opacity-80 transition-opacity duration-300 pointer-events-none"
+                      style={{
+                        background: `radial-gradient(130% 130% at 100% 0%, ${genre.dot}26 0%, transparent 62%)`,
+                      }}
+                    />
                     {/* Ink wash sweep on hover */}
                     <div className="absolute inset-0 bg-ink translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out" />
                     <div className="relative z-10 flex flex-col justify-between h-full items-start">
