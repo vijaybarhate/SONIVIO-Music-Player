@@ -14,6 +14,7 @@ import { useUiStore } from '../store/uiStore';
 import { useCurrentPath } from '../hooks/useCurrentPath';
 import SongCard from '../components/cards/SongCard';
 import { EmptyState } from '../components/common/FeedbackStates';
+import BrandDialog from '../components/ui/BrandDialog';
 import { useWindowVirtualizer } from '@tanstack/react-virtual';
 
 type LibraryTab = 'favorites' | 'playlists' | 'history';
@@ -106,7 +107,7 @@ const Library: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 md:gap-6 mb-6 md:mb-8 select-none">
         <div>
-          <p className="eyebrow mb-2">Collection</p>
+          <p className="eyebrow mb-2"><span className="text-ink/60 tabular-nums">02 /</span> Collection</p>
           <h1 className="text-display-lg text-ink">
             Your Library.
           </h1>
@@ -257,18 +258,18 @@ const Library: React.FC = () => {
                           >
                             <p className="font-sans font-medium text-xs text-center text-ink">Delete "{playlist.name}" permanently?</p>
                             <div className="flex gap-2">
-                              <button 
-                                onClick={() => confirmDelete(playlist.id)}
-                                className="flex-1 h-8 bg-error hover:bg-error-deep text-canvas rounded font-sans text-xs font-medium transition-colors cursor-pointer"
-                              >
-                                Delete
-                              </button>
-                              <button 
-                                onClick={() => setPlaylistToDelete(null)}
-                                className="flex-1 h-8 border border-hairline bg-canvas text-body hover:text-ink rounded font-sans text-xs font-medium transition-colors cursor-pointer"
-                              >
-                                Cancel
-                              </button>
+<button 
+                    onClick={() => confirmDelete(playlist.id)}
+                    className="flex-1 h-8 bg-error hover:bg-error-deep text-canvas rounded-md font-sans text-xs font-medium transition-colors cursor-pointer"
+                  >
+                    Delete
+                  </button>
+                  <button 
+                    onClick={() => setPlaylistToDelete(null)}
+                    className="flex-1 h-8 border border-hairline bg-canvas text-body hover:text-ink rounded-md font-sans text-xs font-medium transition-colors cursor-pointer"
+                  >
+                    Cancel
+                  </button>
                             </div>
                           </motion.div>
                         )}
@@ -331,70 +332,59 @@ const Library: React.FC = () => {
         </motion.div>
       </AnimatePresence>
 
-      {/* Create Modal Dialog */}
-      <AnimatePresence>
-        {isCreateModalOpen && (
-          <>
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 z-[200] bg-ink/20 backdrop-blur-xs"
-              onClick={() => setIsCreateModalOpen(false)}
+      {/* Create Modal Dialog — Base UI Dialog (focus trap, aria-modal, Escape) */}
+      <BrandDialog
+        open={isCreateModalOpen}
+        onOpenChange={setIsCreateModalOpen}
+        title="Create Playlist."
+        description="A new tracklist, ready for your favorites."
+      >
+        <form onSubmit={handleCreatePlaylist} className="space-y-4">
+          <div className="space-y-1">
+            <label className="font-sans text-[10px] font-semibold text-mute uppercase tracking-wide">Playlist Name</label>
+            <input
+              autoFocus
+              type="text"
+              value={newPlaylistName}
+              onChange={(e) => setNewPlaylistName(e.target.value)}
+              className="w-full h-9 bg-canvas border border-hairline rounded-md px-3 font-sans text-xs text-ink focus:border-ink outline-none transition-colors"
+              placeholder="My awesome mix…"
+              required
             />
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.98, y: 10 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.98, y: 10 }}
-              transition={{ duration: 0.2 }}
-              className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[210] w-full max-w-sm bg-canvas border border-hairline rounded-lg p-6 modal-shadow-lvl5"
+          </div>
+          <div className="space-y-1">
+            <label className="font-sans text-[10px] font-semibold text-mute uppercase tracking-wide">Description <span className="lowercase font-normal opacity-65">(optional)</span></label>
+            <textarea
+              value={newPlaylistDesc}
+              onChange={(e) => setNewPlaylistDesc(e.target.value)}
+              className="w-full bg-canvas border border-hairline rounded-md px-3 py-2 font-sans text-xs text-ink focus:border-ink outline-none transition-colors resize-none h-20"
+              placeholder="A collection of the best tracks…"
+            />
+          </div>
+          <div className="flex gap-2 pt-2">
+            <button
+              type="submit"
+              disabled={!newPlaylistName.trim()}
+              className="flex-1 h-9 rounded-md bg-ink hover:bg-body text-canvas font-sans font-medium text-xs transition-colors disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
             >
-              <h2 className="text-lg font-sans font-semibold text-ink tracking-tight mb-4">Create Playlist.</h2>
-              <form onSubmit={handleCreatePlaylist} className="space-y-4">
-                <div className="space-y-1">
-                   <label className="font-sans text-[10px] font-semibold text-mute uppercase tracking-wide">Playlist Name</label>
-                   <input 
-                     autoFocus
-                     type="text"
-                     value={newPlaylistName}
-                     onChange={(e) => setNewPlaylistName(e.target.value)}
-                     className="w-full h-9 bg-canvas border border-hairline rounded px-3 font-sans text-xs text-ink focus:border-ink outline-none transition-colors"
-                     placeholder="My awesome mix…"
-                     required
-                   />
-                </div>
-                <div className="space-y-1">
-                   <label className="font-sans text-[10px] font-semibold text-mute uppercase tracking-wide">Description <span className="lowercase font-normal opacity-65">(optional)</span></label>
-                   <textarea 
-                     value={newPlaylistDesc}
-                     onChange={(e) => setNewPlaylistDesc(e.target.value)}
-                     className="w-full bg-canvas border border-hairline rounded px-3 py-2 font-sans text-xs text-ink focus:border-ink outline-none transition-colors resize-none h-20"
-                     placeholder="A collection of the best tracks…"
-                   />
-                </div>
-                <div className="flex gap-2 pt-2">
-                  <button 
-                    type="submit"
-                    disabled={!newPlaylistName.trim()}
-                    className="flex-1 h-9 rounded bg-ink hover:bg-body text-canvas font-sans font-medium text-xs transition-colors disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
-                  >
-                    Create
-                  </button>
-                  <button 
-                    type="button"
-                    onClick={() => setIsCreateModalOpen(false)}
-                    className="flex-1 h-9 rounded border border-hairline bg-canvas hover:bg-canvas-soft text-body font-sans font-medium text-xs transition-colors cursor-pointer"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </form>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+              Create
+            </button>
+            <DialogCloseButton onClose={() => setIsCreateModalOpen(false)} />
+          </div>
+        </form>
+      </BrandDialog>
     </div>
   );
 };
+
+const DialogCloseButton: React.FC<{ onClose: () => void }> = ({ onClose }) => (
+  <button
+    type="button"
+    onClick={onClose}
+    className="flex-1 h-9 rounded-md border border-hairline bg-canvas hover:bg-canvas-soft text-body font-sans font-medium text-xs transition-colors cursor-pointer"
+  >
+    Cancel
+  </button>
+);
 
 export default Library;

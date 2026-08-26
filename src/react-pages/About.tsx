@@ -70,7 +70,7 @@ const About: React.FC = () => {
             transition={{ duration: 0.5, ease: EASE }}
             className="eyebrow mb-4"
           >
-            System Documentation
+            <span className="text-ink/60 tabular-nums">03 /</span> System Documentation
           </motion.p>
 
           <div className="flex items-center gap-5 mb-6">
@@ -103,7 +103,7 @@ const About: React.FC = () => {
         </div>
       </header>
 
-      {/* Core Architectural Features */}
+      {/* Core Architectural Features — numbered tracklist rows */}
       <Reveal className="mb-14">
         <h2 className="text-display-sm text-ink mb-6">Engine Architecture.</h2>
         <div className="grid sm:grid-cols-2 gap-4">
@@ -112,10 +112,15 @@ const About: React.FC = () => {
               key={i}
               className="p-5 bg-canvas border border-hairline rounded-lg card-shadow-lvl3 hover:border-hairline-strong hover:card-shadow-lvl4 transition-[border-color,box-shadow] duration-200 group"
             >
-              <h3 className="font-sans font-semibold text-sm text-ink mb-2 group-hover:text-link transition-colors">
-                {f.title}
-              </h3>
-              <p className="font-sans text-xs text-body leading-relaxed">{f.desc}</p>
+              <div className="flex items-baseline gap-3 mb-2">
+                <span className="font-mono text-[10px] text-mute tabular-nums">
+                  {String(i + 1).padStart(2, '0')}
+                </span>
+                <h3 className="font-sans font-semibold text-sm text-ink group-hover:text-link transition-colors">
+                  {f.title}
+                </h3>
+              </div>
+              <p className="font-sans text-xs text-body leading-relaxed pl-6">{f.desc}</p>
             </div>
           ))}
         </div>

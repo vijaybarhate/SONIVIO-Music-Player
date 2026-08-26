@@ -13,7 +13,7 @@ const Toasts: React.FC = () => {
   const { toasts, removeToast } = useUiStore();
 
   return (
-    <div className="fixed bottom-28 left-6 z-[100] flex flex-col gap-2 pointer-events-none select-none">
+    <div className="fixed bottom-[132px] md:bottom-28 left-4 md:left-6 z-[100] flex flex-col gap-2 pointer-events-none select-none">
       <AnimatePresence>
         {toasts.map((toast) => {
           const meta = TYPE_META[toast.type ?? 'info'];

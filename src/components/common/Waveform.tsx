@@ -28,13 +28,13 @@ const Waveform: React.FC<WaveformProps> = ({ className = '', instant = false }) 
     >
       <defs>
         <linearGradient id={gradStroke} x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0" stopColor="#fff" stopOpacity="0.25" />
-          <stop offset="0.45" stopColor="#fff" stopOpacity="1" />
-          <stop offset="1" stopColor="#fff" stopOpacity="0.55" />
+          <stop offset="0" stopColor="var(--wave-color)" stopOpacity="0.25" />
+          <stop offset="0.45" stopColor="var(--wave-color)" stopOpacity="1" />
+          <stop offset="1" stopColor="var(--wave-color)" stopOpacity="0.55" />
         </linearGradient>
         <linearGradient id={gradFill} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#fff" stopOpacity="0.32" />
-          <stop offset="1" stopColor="#fff" stopOpacity="0.02" />
+          <stop offset="0" stopColor="var(--wave-color)" stopOpacity="0.32" />
+          <stop offset="1" stopColor="var(--wave-color)" stopOpacity="0.02" />
         </linearGradient>
         <clipPath id={clipFill}>
           <rect

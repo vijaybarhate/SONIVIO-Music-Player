@@ -97,7 +97,7 @@ const QueueDrawer: React.FC<QueueDrawerProps> = ({ isOpen, onClose }) => {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: Math.min(index * 0.02, 0.15) }}
                       className={`
-                        group flex items-center gap-2 p-2 rounded border transition-all cursor-pointer
+                        group flex items-center gap-2 p-2 rounded-md border transition-all cursor-pointer
                         ${isActive 
                           ? 'bg-canvas border-hairline-strong shadow-sm' 
                           : 'bg-canvas border-hairline hover:border-hairline-strong hover:bg-canvas-soft'

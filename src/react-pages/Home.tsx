@@ -278,10 +278,10 @@ const Home: React.FC = () => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.55, ease: EASE }}
-            className="mb-6 md:mb-10 relative rounded-lg glass-panel sheen p-5 md:p-8 overflow-hidden flex flex-col sm:flex-row justify-between gap-4 md:gap-6 card-shadow-lvl4 cursor-pointer hover:border-hairline-strong transition-colors duration-300 group"
+            className="mb-6 md:mb-10 relative rounded-lg bg-canvas border border-hairline hover:border-hairline-strong p-5 md:p-8 overflow-hidden flex flex-col sm:flex-row justify-between gap-4 md:gap-6 card-shadow-lvl4 cursor-pointer hover:card-shadow-lvl3 transition-[border-color,box-shadow] duration-300 group"
             onClick={() => play(featured)}
           >
-            <div className="absolute inset-0 mesh-gradient-backdrop opacity-60 dark:opacity-80 pointer-events-none" aria-hidden="true" />
+            <div className="absolute inset-0 mesh-gradient-backdrop opacity-50 dark:opacity-70 pointer-events-none" aria-hidden="true" />
 
             <div className="relative z-10 max-w-xl flex flex-col justify-between gap-4 md:gap-6">
               <div>

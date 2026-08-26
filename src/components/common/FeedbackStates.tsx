@@ -34,8 +34,16 @@ export const EmptyState: React.FC<FeedbackProps> = ({
 }) => {
   return (
     <div className="flex flex-col items-center py-16 text-center select-none">
-      <div className="text-mute mb-5 bg-canvas-soft-2 border border-hairline p-4 rounded-md">
-        {icon}
+      <div className="relative mb-5">
+        <div className="text-mute bg-canvas-soft-2 border border-hairline p-4 rounded-md">
+          {icon}
+        </div>
+        {/* Paused equalizer — the brand's "nothing playing" signal */}
+        <Equalizer
+          bars={3}
+          playing={false}
+          className="h-2.5 text-link absolute -bottom-1.5 left-1/2 -translate-x-1/2"
+        />
       </div>
       <h3 className="text-base font-sans font-semibold text-ink mb-1.5">{title}</h3>
       <p className="font-sans text-xs text-mute max-w-sm mb-6">{message}</p>
@@ -43,7 +51,7 @@ export const EmptyState: React.FC<FeedbackProps> = ({
       {actionLabel && onAction && (
         <button
           onClick={onAction}
-          className="h-9 px-5 rounded bg-ink hover:bg-body text-canvas font-sans font-medium text-xs shadow-sm transition-colors cursor-pointer"
+          className="h-9 px-5 rounded-full bg-ink hover:bg-body text-canvas font-sans font-medium text-xs shadow-sm transition-colors cursor-pointer"
         >
           {actionLabel}
         </button>
@@ -69,7 +77,7 @@ export const ErrorState: React.FC<FeedbackProps> = ({
       
       <button
         onClick={onAction || (() => window.location.reload())}
-        className="h-8 px-4 rounded border border-hairline bg-canvas hover:bg-canvas-soft text-body hover:text-ink font-sans text-xs font-semibold shadow-sm transition-colors cursor-pointer"
+        className="h-8 px-4 rounded-full border border-hairline bg-canvas hover:bg-canvas-soft text-body hover:text-ink font-sans text-xs font-semibold shadow-sm transition-colors cursor-pointer"
       >
         {actionLabel}
       </button>

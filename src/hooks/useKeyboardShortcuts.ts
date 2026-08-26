@@ -62,6 +62,8 @@ export const useKeyboardShortcuts = () => {
           if (currentTrack) toggleLike(currentTrack);
           break;
         case 'Slash':
+          // Shift+/ is '?' — handled below as the command palette toggle
+          if (e.shiftKey) break;
           e.preventDefault();
           if (typeof window !== 'undefined') {
             const searchPath = `${import.meta.env.BASE_URL.replace(/\/$/, '')}/search`;

@@ -1,10 +1,10 @@
-import React, { useRef, useState } from 'react';
-import { Play, Heart, MoreVertical } from 'lucide-react';
+import React, { useRef } from 'react';
+import { Play, Heart } from 'lucide-react';
 import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
 import type { Track } from '../../types';
 import { usePlayerStore } from '../../store/playerStore';
 import { useLibraryStore } from '../../store/libraryStore';
-import ContextMenu from '../common/ContextMenu';
+import { TrackContextMenu, TrackMenuButton } from '../common/ContextMenu';
 import Equalizer from '../common/Equalizer';
 
 interface SongCardProps {
@@ -18,12 +18,6 @@ const SPRING = { type: 'spring', stiffness: 400, damping: 28 } as const;
 const SongCard: React.FC<SongCardProps> = ({ track, context, variant = 'vertical' }) => {
   const { play, currentTrack, isPlaying } = usePlayerStore();
   const { likedSongs, toggleLike } = useLibraryStore();
-
-  const [contextMenu, setContextMenu] = useState<{ isOpen: boolean; x: number; y: number }>({
-    isOpen: false,
-    x: 0,
-    y: 0,
-  });
 
   const isActive = currentTrack?.id === track.id;
   const isLiked = likedSongs.some((t) => t.id === track.id);
@@ -48,89 +42,67 @@ const SongCard: React.FC<SongCardProps> = ({ track, context, variant = 'vertical
     ry.set(0);
   };
 
-  const handleContextMenu = (e: React.MouseEvent) => {
-    e.preventDefault();
-    setContextMenu({ isOpen: true, x: e.clientX, y: e.clientY });
-  };
-
-  const handleMoreClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    const rect = e.currentTarget.getBoundingClientRect();
-    setContextMenu({ isOpen: true, x: rect.left, y: rect.bottom + 6 });
-  };
-
   if (variant === 'horizontal') {
     return (
-      <div
-        onClick={() => play(track, context)}
-        onContextMenu={handleContextMenu}
-        className={`flex items-center gap-3 p-2 rounded-md cursor-pointer group border transition-colors duration-200 ${
-          isActive
-            ? 'bg-canvas-soft-2 border-hairline-strong'
-            : 'bg-canvas hover:bg-canvas-soft border-hairline hover:border-hairline-strong'
-        }`}
-      >
-        <div className="relative w-10 h-10 rounded-sm overflow-hidden flex-shrink-0 border border-hairline bg-canvas-soft-2">
-          <img
-            src={track.thumbnail}
-            alt=""
-            loading="lazy"
-            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-108"
-          />
-          <div
-            className={`absolute inset-0 bg-black/35 flex items-center justify-center transition-opacity duration-200 ${
-              isActive ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
-            }`}
-          >
-            {isActive ? (
-              <Equalizer bars={3} className="h-3 text-canvas" playing={isPlaying} />
-            ) : (
-              <Play size={10} className="text-canvas ml-0.5" fill="currentColor" />
-            )}
-          </div>
-        </div>
-
-        <div className="min-w-0 flex-1">
-          <h4 className={`font-sans font-medium text-xs truncate ${isActive ? 'text-link' : 'text-ink'}`}>
-            {track.title}
-          </h4>
-          <p className="font-sans text-[10px] text-mute truncate mt-0.5">{track.artist}</p>
-        </div>
-
-        <motion.button
-          whileTap={{ scale: 0.8 }}
-          onClick={(e) => {
-            e.stopPropagation();
-            toggleLike(track);
-          }}
-          aria-label={isLiked ? 'Remove from favorites' : 'Add to favorites'}
-          className={`p-1.5 rounded hover:bg-canvas transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-hairline-strong ${
-            isLiked ? 'text-link opacity-100' : 'text-mute opacity-0 group-hover:opacity-100 hover:text-ink'
+      <TrackContextMenu track={track}>
+        <div
+          onClick={() => play(track, context)}
+          className={`flex items-center gap-3 p-2 rounded-md cursor-pointer group border transition-colors duration-200 ${
+            isActive
+              ? 'bg-canvas-soft-2 border-hairline-strong'
+              : 'bg-canvas hover:bg-canvas-soft border-hairline hover:border-hairline-strong'
           }`}
         >
-          <Heart size={13} fill={isLiked ? 'currentColor' : 'none'} />
-        </motion.button>
-        <button
-          onClick={handleMoreClick}
-          aria-label="More options"
-          className="p-1.5 text-mute hover:text-ink hover:bg-canvas rounded opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-hairline-strong"
-        >
-          <MoreVertical size={13} />
-        </button>
+          <div className="relative w-10 h-10 rounded-sm overflow-hidden flex-shrink-0 border border-hairline bg-canvas-soft-2">
+            <img
+              src={track.thumbnail}
+              alt=""
+              loading="lazy"
+              width={480}
+              height={360}
+              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-108"
+            />
+            <div
+              className={`absolute inset-0 bg-black/35 flex items-center justify-center transition-opacity duration-200 ${
+                isActive ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+              }`}
+            >
+              {isActive ? (
+                <Equalizer bars={3} className="h-3 text-canvas" playing={isPlaying} />
+              ) : (
+                <Play size={10} className="text-canvas ml-0.5" fill="currentColor" />
+              )}
+            </div>
+          </div>
 
-        <ContextMenu
-          isOpen={contextMenu.isOpen}
-          onClose={() => setContextMenu({ ...contextMenu, isOpen: false })}
-          x={contextMenu.x}
-          y={contextMenu.y}
-          track={track}
-        />
-      </div>
+          <div className="min-w-0 flex-1">
+            <h4 className={`font-sans font-medium text-xs truncate ${isActive ? 'text-link' : 'text-ink'}`}>
+              {track.title}
+            </h4>
+            <p className="font-sans text-[10px] text-mute truncate mt-0.5">{track.artist}</p>
+          </div>
+
+          <motion.button
+            whileTap={{ scale: 0.8 }}
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleLike(track);
+            }}
+            aria-label={isLiked ? 'Remove from favorites' : 'Add to favorites'}
+            className={`p-1.5 rounded hover:bg-canvas transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-hairline-strong ${
+              isLiked ? 'text-link opacity-100' : 'text-mute opacity-0 group-hover:opacity-100 hover:text-ink'
+            }`}
+          >
+            <Heart size={13} fill={isLiked ? 'currentColor' : 'none'} />
+          </motion.button>
+          <TrackMenuButton track={track} className="opacity-0 group-hover:opacity-100 focus-visible:opacity-100" />
+        </div>
+      </TrackContextMenu>
     );
   }
 
   return (
-    <>
+    <TrackContextMenu track={track} className="h-full">
       <div className="perspective-card h-full">
         <motion.div
           ref={cardRef}
@@ -138,8 +110,7 @@ const SongCard: React.FC<SongCardProps> = ({ track, context, variant = 'vertical
           onMouseLeave={resetTilt}
           style={{ rotateX, rotateY }}
           onClick={() => play(track, context)}
-          onContextMenu={handleContextMenu}
-          className="bg-canvas border border-hairline hover:border-hairline-strong rounded-lg overflow-hidden group cursor-pointer transition-[border-color,box-shadow] duration-200 card-shadow-lvl3 hover:card-shadow-lvl4 flex flex-col h-full will-change-transform"
+          className="bg-canvas border border-hairline hover:border-hairline-strong rounded-lg overflow-hidden group cursor-pointer transition-[border-color,box-shadow] duration-200 card-shadow-lvl3 hover:card-shadow-lvl4 flex flex-col h-full"
         >
           <div className="p-2 pb-0">
             <div className="relative aspect-square w-full rounded-md overflow-hidden bg-canvas-soft-2 border border-hairline">
@@ -147,6 +118,8 @@ const SongCard: React.FC<SongCardProps> = ({ track, context, variant = 'vertical
                 src={track.thumbnail}
                 alt=""
                 loading="lazy"
+                width={480}
+                height={360}
                 className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-106"
               />
 
@@ -198,15 +171,7 @@ const SongCard: React.FC<SongCardProps> = ({ track, context, variant = 'vertical
           </div>
         </motion.div>
       </div>
-
-      <ContextMenu
-        isOpen={contextMenu.isOpen}
-        onClose={() => setContextMenu({ ...contextMenu, isOpen: false })}
-        x={contextMenu.x}
-        y={contextMenu.y}
-        track={track}
-      />
-    </>
+    </TrackContextMenu>
   );
 };
 

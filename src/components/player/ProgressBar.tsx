@@ -51,11 +51,11 @@ const ProgressBar: React.FC = () => {
           onMouseEnter={() => setIsHovering(true)}
           onMouseLeave={() => setIsHovering(false)}
           onKeyDown={() => setIsHovering(false)}
-          className="absolute w-full z-10 opacity-0 cursor-pointer h-full focus-visible:outline-none"
+          className="absolute w-full z-10 opacity-0 cursor-pointer h-full peer focus-visible:outline-none"
         />
 
-        {/* Track */}
-        <div className="absolute w-full h-1 bg-hairline rounded-full group-hover:h-1.5 transition-all duration-150" />
+        {/* Track — visible focus ring via peer-focus-visible */}
+        <div className="absolute w-full h-1 bg-hairline rounded-full group-hover:h-1.5 transition-all duration-150 peer-focus-visible:ring-2 peer-focus-visible:ring-link/30 peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-transparent" />
 
         {/* Fill — gradient ink → link at the leading edge */}
         <div

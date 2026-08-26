@@ -101,7 +101,6 @@ const Artist: React.FC<ArtistProps> = ({ channelId }) => {
           className={`absolute inset-0 bg-cover bg-center ${!artist.bannerUrl ? 'blur-3xl scale-110 opacity-30' : 'opacity-40'}`}
           style={bannerStyle}
         />
-        <div className="absolute inset-0 mesh-gradient-backdrop opacity-50" aria-hidden="true" />
         <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/40 to-transparent" />
 
         <div className="absolute bottom-0 inset-x-0 p-4 md:p-8 flex flex-col sm:flex-row items-center sm:items-end justify-between gap-4 md:gap-6 text-center sm:text-left select-none">
@@ -111,10 +110,19 @@ const Artist: React.FC<ArtistProps> = ({ channelId }) => {
             </div>
             <div>
               <p className="eyebrow mb-1.5 !text-canvas/60">Artist</p>
-              <h1 className="text-display-md md:text-display-lg text-canvas mb-1">{artist.title}</h1>
-              <p className="font-mono text-[11px] text-canvas/70 tabular-nums">
-                {formatCount(artist.subscriberCount)} subscribers {artist.videoCount && `· ${formatCount(artist.videoCount)} videos`}
-              </p>
+              <h1 className="text-display-md md:text-display-lg text-canvas mb-2">{artist.title}</h1>
+              <div className="flex items-center gap-2 flex-wrap">
+                {artist.subscriberCount && (
+                  <span className="font-mono text-[10px] text-canvas/80 bg-canvas/10 border border-canvas/20 rounded-full px-2.5 py-0.5 tabular-nums">
+                    {formatCount(artist.subscriberCount)} SUBSCRIBERS
+                  </span>
+                )}
+                {artist.videoCount && (
+                  <span className="font-mono text-[10px] text-canvas/80 bg-canvas/10 border border-canvas/20 rounded-full px-2.5 py-0.5 tabular-nums">
+                    {formatCount(artist.videoCount)} VIDEOS
+                  </span>
+                )}
+              </div>
             </div>
           </div>
 

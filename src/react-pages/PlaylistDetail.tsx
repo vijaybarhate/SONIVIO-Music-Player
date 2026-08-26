@@ -175,7 +175,7 @@ const PlaylistDetail: React.FC<PlaylistDetailProps> = ({ id }) => {
             {tracks.map((track, i) => (
               <div 
                 key={`${track.id}-${i}`}
-                className="flex items-center px-4 py-2.5 rounded hover:bg-canvas-soft-2 transition-colors group cursor-pointer"
+                className="flex items-center px-4 py-2.5 rounded-md hover:bg-canvas-soft-2 transition-colors group cursor-pointer"
                 onClick={() => play(track, tracks)}
               >
                 <div className="w-6 text-center font-mono text-xs text-mute group-hover:hidden select-none">

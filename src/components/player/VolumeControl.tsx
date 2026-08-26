@@ -29,9 +29,9 @@ const VolumeControl: React.FC = () => {
           value={effectiveVol}
           onChange={(e) => setVolume(Number(e.target.value))}
           aria-label="Volume"
-          className="absolute w-full z-10 opacity-0 cursor-pointer h-full focus-visible:outline-none"
+          className="absolute w-full z-10 opacity-0 cursor-pointer h-full peer focus-visible:outline-none"
         />
-        <div className="absolute w-full h-[3px] bg-hairline rounded-full group-hover:h-1 transition-all duration-150" />
+        <div className="absolute w-full h-[3px] bg-hairline rounded-full group-hover:h-1 transition-all duration-150 peer-focus-visible:ring-2 peer-focus-visible:ring-link/30 peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-transparent" />
         <div
           className="absolute h-[3px] bg-ink rounded-full pointer-events-none group-hover:h-1 transition-all duration-150"
           style={{ width: `${effectiveVol}%` }}

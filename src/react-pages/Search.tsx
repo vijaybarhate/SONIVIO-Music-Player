@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Search as SearchIcon, X, Clock, Trash2 } from 'lucide-react';
+import { Command } from 'cmdk';
 import { searchTracks, searchArtists, searchPlaylists } from '../services/youtube';
 import type { Track } from '../types';
 import SongCard from '../components/cards/SongCard';
@@ -95,30 +96,33 @@ const Search: React.FC = () => {
     <div className="pb-12">
       {/* Page header */}
       <header className="mb-6 md:mb-8 select-none">
-        <p className="eyebrow mb-2">Discover</p>
+        <p className="eyebrow mb-2"><span className="text-ink/60 tabular-nums">01 /</span> Discover</p>
         <h1 className="text-display-lg text-ink">Find your next obsession.</h1>
       </header>
 
-      {/* Search Bar Container */}
+      {/* Search Bar Container — cmdk combobox (arrow-key nav, type-ahead) */}
       <div className="mb-6 md:mb-8 select-none">
-        <div className={`relative max-w-3xl mx-auto rounded-md bg-canvas border transition-all duration-200 ${
-          isInputFocused ? 'border-ink card-shadow-lvl4' : 'border-hairline card-shadow-lvl3'
-        }`}>
+        <Command
+          shouldFilter={false}
+          className={`relative max-w-3xl mx-auto rounded-md bg-canvas border transition-all duration-200 ${
+            isInputFocused ? 'border-ink card-shadow-lvl4' : 'border-hairline card-shadow-lvl3'
+          }`}
+        >
           <div className="flex items-center px-4 h-12">
             <SearchIcon size={18} className={isInputFocused ? 'text-ink' : 'text-mute'} />
-            <input
-              type="text"
-              placeholder="Search songs, artists, or playlists…"
+            <Command.Input
               value={query}
+              onValueChange={setQuery}
               onFocus={() => setIsInputFocused(true)}
               onBlur={() => setTimeout(() => setIsInputFocused(false), 200)}
-              onChange={(e) => setQuery(e.target.value)}
-              className="flex-1 bg-transparent border-none outline-none text-ink px-3 font-sans text-sm placeholder:text-mute focus:ring-0"
+              placeholder="Search songs, artists, or playlists…"
+              className="flex-1 bg-transparent border-none outline-none text-ink px-3 font-sans text-sm placeholder:text-mute"
             />
             {query && (
               <button
                 onClick={() => setQuery('')}
-                className="p-1 text-mute hover:text-ink transition-colors"
+                aria-label="Clear search"
+                className="p-1 text-mute hover:text-ink transition-colors cursor-pointer"
               >
                 <X size={16} />
               </button>
@@ -135,56 +139,66 @@ const Search: React.FC = () => {
                 transition={{ duration: 0.15 }}
                 className="absolute top-[calc(100%+8px)] left-0 right-0 z-50 bg-canvas border border-hairline rounded-md p-3 modal-shadow-lvl5"
               >
-                {!query && searchHistory.length > 0 && (
-                  <>
-                    <div className="flex justify-between items-center mb-2 px-2">
-                      <span className="font-mono text-[10px] font-semibold text-mute uppercase tracking-wider">Recent Searches</span>
-                      <button 
-                        onClick={clearSearchHistory}
-                        className="flex items-center gap-1 font-sans text-[11px] text-mute hover:text-error transition-colors"
-                      >
-                        <Trash2 size={11} />
-                        Clear
-                      </button>
-                    </div>
-                    <div className="flex flex-col max-h-60 overflow-y-auto custom-scrollbar">
-                      {searchHistory.slice(0, 5).map((h, i) => (
+                <Command.List className="max-h-60 overflow-y-auto custom-scrollbar">
+                  {!query && searchHistory.length > 0 && (
+                    <>
+                      <div className="flex justify-between items-center mb-2 px-2">
+                        <span className="font-mono text-[10px] font-semibold text-mute uppercase tracking-wider">Recent Searches</span>
                         <button
+                          onClick={clearSearchHistory}
+                          className="flex items-center gap-1 font-sans text-[11px] text-mute hover:text-error transition-colors cursor-pointer"
+                        >
+                          <Trash2 size={11} />
+                          Clear
+                        </button>
+                      </div>
+                      {searchHistory.slice(0, 5).map((h, i) => (
+                        <Command.Item
                           key={i}
-                          onClick={() => setQuery(h)}
-                          className="flex items-center gap-3 px-2 py-2 rounded hover:bg-canvas-soft-2 transition-colors text-left"
+                          onSelect={() => setQuery(h)}
+                          className="flex items-center gap-3 px-2 py-2 rounded-md hover:bg-canvas-soft-2 transition-colors text-left cursor-pointer outline-none data-[selected=true]:bg-canvas-soft-2"
                         >
                           <Clock size={13} className="text-mute flex-shrink-0" />
                           <span className="font-sans text-xs text-ink flex-1 truncate">{h}</span>
-                        </button>
+                        </Command.Item>
                       ))}
-                    </div>
-                  </>
-                )}
-                
-                {query && suggestions.length > 0 && (
-                  <div className="flex flex-col max-h-60 overflow-y-auto custom-scrollbar">
-                    <span className="font-mono text-[10px] font-semibold text-mute uppercase tracking-wider mb-2 px-2">Suggestions</span>
-                    {suggestions.map((track) => (
-                      <button
-                        key={track.id}
-                        onClick={() => handleSuggestionClick(track)}
-                        className="flex items-center gap-3 px-2 py-2 rounded hover:bg-canvas-soft-2 transition-colors text-left"
-                      >
-                        <SearchIcon size={13} className="text-mute flex-shrink-0" />
-                        <span className="font-sans text-xs text-ink flex-1 truncate">{track.title}</span>
-                      </button>
-                    ))}
-                  </div>
-                )}
+                    </>
+                  )}
 
-                {query && suggestions.length === 0 && !loading && (
-                  <div className="p-2 text-center text-xs text-mute font-sans">Press enter to search.</div>
-                )}
+                  {query && suggestions.length > 0 && (
+                    <>
+                      <span className="font-mono text-[10px] font-semibold text-mute uppercase tracking-wider mb-2 px-2 block">
+                        Suggestions
+                      </span>
+                      {suggestions.map((track) => (
+                        <Command.Item
+                          key={track.id}
+                          onSelect={() => handleSuggestionClick(track)}
+                          className="flex items-center gap-3 px-2 py-2 rounded-md hover:bg-canvas-soft-2 transition-colors text-left cursor-pointer outline-none data-[selected=true]:bg-canvas-soft-2"
+                        >
+                          <img
+                            src={track.thumbnail}
+                            alt=""
+                            className="w-7 h-7 rounded-sm object-cover border border-hairline flex-shrink-0"
+                            loading="lazy"
+                          />
+                          <span className="font-sans text-xs text-ink flex-1 truncate">{track.title}</span>
+                          <span className="font-sans text-[10px] text-mute truncate max-w-[40%]">{track.artist}</span>
+                        </Command.Item>
+                      ))}
+                    </>
+                  )}
+
+                  {query && suggestions.length === 0 && !loading && (
+                    <Command.Empty className="p-2 text-center text-xs text-mute font-sans">
+                      Press enter to search.
+                    </Command.Empty>
+                  )}
+                </Command.List>
               </motion.div>
             )}
           </AnimatePresence>
-        </div>
+        </Command>
       </div>
 
       {/* Tab Selectors — sliding pill */}

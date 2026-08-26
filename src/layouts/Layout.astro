@@ -4,6 +4,7 @@ import BottomNav from '../components/layout/BottomNav';
 import BottomPlayer from '../components/player/BottomPlayer';
 import HiddenYouTube from '../components/player/HiddenYouTube';
 import Toasts from '../components/common/Toasts';
+import CommandPalette from '../components/common/CommandPalette';
 import { ClientRouter } from 'astro:transitions';
 import '../styles/global.css';
 
@@ -46,9 +47,18 @@ const { title, description = 'SONIVIO v2 - Premium Music Streaming Platform' } =
     </script>
   </head>
   <body class="flex h-screen bg-canvas-soft text-ink overflow-hidden antialiased selection:bg-ink selection:text-canvas">
+    <!-- Skip link for keyboard users -->
+    <a
+      href="#main-content-scroll"
+      class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[300] focus:px-4 focus:py-2 focus:rounded-md focus:bg-ink focus:text-canvas focus:font-sans focus:text-xs focus:font-medium"
+    >
+      Skip to content
+    </a>
+
     <!-- Persistent YouTube player and notification system -->
     <HiddenYouTube client:only="react" transition:persist="youtube" />
     <Toasts client:only="react" transition:persist="toasts" />
+    <CommandPalette client:only="react" transition:persist="commandpalette" />
     
     <!-- Persistent Sidebar (hidden on mobile, visible on md+) -->
     <div class="hidden md:flex">

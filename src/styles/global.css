@@ -13,6 +13,8 @@
   --mute: #888888;
   --hairline: #ebebeb;
   --hairline-strong: #a1a1a1;
+  /* Signature waveform — ink on light canvas, white on dark (W1) */
+  --wave-color: #171717;
 }
 
 .dark {
@@ -26,6 +28,7 @@
   --mute: #666666;
   --hairline: #222222;
   --hairline-strong: #3a3a3a;
+  --wave-color: #ffffff;
 }
 
 @theme {
@@ -152,6 +155,16 @@
 }
 
 /* Custom layout and decoration classes */
+
+/* ─────────────────────────────────────────────────────────────
+   DESIGN RULES (W3/W6) — "The Tracklist" editorial voice
+   Radius: cards 8px (rounded-lg) · controls/inputs/menus 6px
+           (rounded-md) · CTAs pill (rounded-full) · inline icon
+           buttons 4px (rounded-sm). No mixed-radius clusters.
+   Type:   page header = mono eyebrow → display-lg headline →
+           body lead. Metadata floor 11px; titles 12px+.
+   ───────────────────────────────────────────────────────────── */
+
 @utility accent-gradient {
   background: linear-gradient(135deg, var(--color-gradient-develop-start) 0%, var(--color-gradient-preview-end) 50%, var(--color-gradient-ship-end) 100%);
 }
